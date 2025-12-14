@@ -40,16 +40,16 @@ const RegisterScreen = () => {
         ⬅ Back
       </Link>
 
-      <h2>Create Account</h2>
+      <h2>Create Account :</h2>
 
       {loading && <Loader />}
       {error && <Message variant="danger">{getErrorText()}</Message>}
 
       <form onSubmit={submitHandler}>
         <div className="mb-3">
-          <label>Username</label>
+          <label>Username :</label>
           <input
-            className="form-control"
+            className="form-control mt-2"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             required
@@ -57,10 +57,10 @@ const RegisterScreen = () => {
         </div>
 
         <div className="mb-3">
-          <label>Email</label>
+          <label>Email :</label>
           <input
             type="email"
-            className="form-control"
+            className="form-control mt-2"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -68,10 +68,10 @@ const RegisterScreen = () => {
         </div>
 
         <div className="mb-3">
-          <label>Password</label>
+          <label>Password :</label>
           <input
             type="password"
-            className="form-control"
+            className="form-control mt-2"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -79,7 +79,7 @@ const RegisterScreen = () => {
         </div>
 
         <div className="mb-3">
-          <label>Register As</label>
+          <label>Register As :</label>
           <select
             className="form-select mt-2"
             value={isAdmin ? "true" : "false"}

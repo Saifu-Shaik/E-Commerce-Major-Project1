@@ -39,11 +39,8 @@ Steps Included Sir/Mam:
 ## Step 1 — Open terminal inside frontend folder
 
 1. cd frontend ;
-2. Install Dependencies
-   npm install
-   npm start ;
-
-3. Start Frontend Server ;
+2. npm install ;
+3. npm start ;
 
 # Thanking You Sir/Mam.....
 
