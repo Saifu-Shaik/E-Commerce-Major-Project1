@@ -30,8 +30,9 @@ Steps Included Sir/Mam:
 3. venv\Scripts\activate
 4. pip install -r requirements.txt
 5. python manage.py migrate
-6. python manage.py createsuperuser # already can login with available admin detais sir
-7. python manage.py runserver
+6. python -m pip install Pillow
+7. python manage.py createsuperuser # already can login with available admin detais sir
+8. python manage.py runserver
 
 # 2. Frontend SETUP (React JS Server)
 
