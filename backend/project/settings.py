@@ -1,22 +1,23 @@
 from pathlib import Path
 import os
 
+# Base directory
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
+# SECURITY
 SECRET_KEY = os.environ.get("SECRET_KEY", "fallback-secret-key")
 
-DEBUG = False
+# ✅ IMPORTANT FOR DEPLOYMENT
+DEBUG = os.environ.get("DEBUG", "False") == "True"
 
+# ✅ UPDATED FOR RENDER
 ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
-    ".onrender.com",
+    ".onrender.com",   # ✅ Allows your Render backend
 ]
 
-
-
-
+# APPLICATIONS
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -25,18 +26,21 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
 
+    # Third-party
     "corsheaders",
     "rest_framework",
+    "whitenoise",  # ✅ Added for static files on Render
 
+    # Local app
     "app",
 ]
 
-
-
-
+# MIDDLEWARE
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
+
+    "whitenoise.middleware.WhiteNoiseMiddleware",  # ✅ IMPORTANT for static files
 
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -47,14 +51,12 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-
-
-
+# URL CONFIG
 ROOT_URLCONF = "project.urls"
+
 WSGI_APPLICATION = "project.wsgi.application"
 
-
-
+# TEMPLATES
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
@@ -71,8 +73,15 @@ TEMPLATES = [
     },
 ]
 
+# DATABASE (SQLite — Render supports this for small projects)
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
+    }
+}
 
-
+# DJANGO REST FRAMEWORK
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
@@ -82,34 +91,23 @@ REST_FRAMEWORK = {
     ),
 }
 
-
-
+# ✅ CORS (React ↔ Django)
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
-
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
-}
-
-
-
+# STATIC FILES (VERY IMPORTANT FOR RENDER)
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
+# MEDIA FILES
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
-
-
+# DEFAULT PRIMARY KEY
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-
-
-
+# EMAIL CONFIG (unchanged)
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587

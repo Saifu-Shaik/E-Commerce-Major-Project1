@@ -5,6 +5,7 @@ from django.utils import timezone
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.conf import settings
 
 from .models import Product, Order, OrderItem, ShippingAddress, UserProfile
 from .serializers import (
@@ -15,13 +16,9 @@ from .serializers import (
     UserProfileSerializer,
 )
 
-
-
 def generate_tokens(user):
     refresh = RefreshToken.for_user(user)
     return {"access": str(refresh.access_token), "refresh": str(refresh)}
-
-
 
 @api_view(["POST"])
 def loginUser(request):
@@ -49,8 +46,6 @@ def loginUser(request):
         **tokens,
     })
 
-
-
 @api_view(["POST"])
 def registerUser(request):
     serializer = RegisterSerializer(data=request.data)
@@ -58,7 +53,6 @@ def registerUser(request):
     if serializer.is_valid():
         user = serializer.save()
 
-   
         if user.is_staff:
             user.is_superuser = True
             user.save()
@@ -71,13 +65,11 @@ def registerUser(request):
             "username": user.username,
             "email": user.email,
             "is_admin": user.is_staff,
-            "profile": {} if user.is_staff else {},
+            "profile": {},
             **tokens,
         })
 
     return Response(serializer.errors, status=400)
-
-
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
@@ -95,19 +87,16 @@ def getUserProfile(request):
         "profile": profile_data,
     })
 
-
 @api_view(["PUT"])
 @permission_classes([IsAuthenticated])
 def updateUserProfile(request):
     user = request.user
 
-   
     if user.is_staff:
         return Response({"detail": "Admin profile cannot be updated"}, status=403)
 
     data = request.data
 
-    
     user.username = data.get("username", user.username)
     user.email = data.get("email", user.email)
 
@@ -116,13 +105,11 @@ def updateUserProfile(request):
 
     user.save()
 
-
     profile, _ = UserProfile.objects.get_or_create(user=user)
 
     profile.first_name = data.get("first_name", profile.first_name)
     profile.last_name = data.get("last_name", profile.last_name)
 
- 
     dob_value = data.get("dob")
     if dob_value not in ["", None]:
         profile.dob = dob_value  
@@ -143,21 +130,16 @@ def updateUserProfile(request):
         **tokens,
     })
 
-
-
 @api_view(["GET"])
 @permission_classes([IsAdminUser])
 def adminGetUsers(request):
     users = User.objects.all()
     return Response(UserSerializer(users, many=True).data)
 
-
-
 @api_view(["GET"])
 def getProducts(request):
     products = Product.objects.all()
     return Response(ProductSerializer(products, many=True, context={"request": request}).data)
-
 
 @api_view(["GET"])
 def getProduct(request, pk):
@@ -168,14 +150,11 @@ def getProduct(request, pk):
 
     return Response(ProductSerializer(product, context={"request": request}).data)
 
-
-
 @api_view(["GET"])
 @permission_classes([IsAdminUser])
 def adminGetProducts(request):
     products = Product.objects.all()
-    return Response(ProductSerializer(products, many=True).data)
-
+    return Response(ProductSerializer(products, many=True, context={"request": request}).data)
 
 @api_view(["POST"])
 @permission_classes([IsAdminUser])
@@ -195,13 +174,11 @@ def createProduct(request):
         product.image = request.FILES["image"]
 
     product.save()
-    return Response(ProductSerializer(product).data)
-
+    return Response(ProductSerializer(product, context={"request": request}).data)
 
 @api_view(["PUT"])
 @permission_classes([IsAdminUser])
 def updateProduct(request, pk):
-
     try:
         product = Product.objects.get(id=pk)
     except Product.DoesNotExist:
@@ -219,8 +196,7 @@ def updateProduct(request, pk):
         product.image = request.FILES["image"]
 
     product.save()
-    return Response(ProductSerializer(product).data)
-
+    return Response(ProductSerializer(product, context={"request": request}).data)
 
 @api_view(["DELETE"])
 @permission_classes([IsAdminUser])
@@ -231,8 +207,6 @@ def deleteProduct(request, pk):
         return Response({"detail": "Product deleted"})
     except Product.DoesNotExist:
         return Response({"detail": "Product not found"}, status=404)
-
-
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
@@ -276,14 +250,11 @@ def addOrderItems(request):
 
     return Response(OrderSerializer(order).data)
 
-
-
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def getMyOrders(request):
     orders = Order.objects.filter(user=request.user)
     return Response(OrderSerializer(orders, many=True).data)
-
 
 @api_view(["GET"])
 @permission_classes([IsAdminUser])
@@ -291,11 +262,9 @@ def adminGetOrders(request):
     orders = Order.objects.all()
     return Response(OrderSerializer(orders, many=True).data)
 
-
 @api_view(["PUT"])
 @permission_classes([IsAdminUser])
 def adminUpdateOrder(request, pk):
-
     try:
         order = Order.objects.get(id=pk)
     except Order.DoesNotExist:
@@ -308,7 +277,6 @@ def adminUpdateOrder(request, pk):
         if order.isPaid:
             order.paidAt = timezone.now()
 
-
     if "isDelivered" in data:
         if data["isDelivered"] and not order.isPaid:
             return Response({"detail": "Cannot deliver unpaid order"}, status=400)
@@ -319,8 +287,6 @@ def adminUpdateOrder(request, pk):
 
     order.save()
     return Response(OrderSerializer(order).data)
-
-
 
 @api_view(["DELETE"])
 @permission_classes([IsAdminUser])
