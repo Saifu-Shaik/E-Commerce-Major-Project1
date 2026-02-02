@@ -1,35 +1,28 @@
-
 import API from "../api";
 import {
   PRODUCT_LIST_REQUEST,
   PRODUCT_LIST_SUCCESS,
   PRODUCT_LIST_FAIL,
-
   PRODUCT_DETAILS_REQUEST,
   PRODUCT_DETAILS_SUCCESS,
   PRODUCT_DETAILS_FAIL,
-
   PRODUCT_DELETE_REQUEST,
   PRODUCT_DELETE_SUCCESS,
   PRODUCT_DELETE_FAIL,
-
   PRODUCT_CREATE_REQUEST,
   PRODUCT_CREATE_SUCCESS,
   PRODUCT_CREATE_FAIL,
-
   PRODUCT_UPDATE_REQUEST,
   PRODUCT_UPDATE_SUCCESS,
   PRODUCT_UPDATE_FAIL,
 } from "../constants/productConstants";
 
-const BASE_URL = "http://127.0.0.1:8000";
-
+const BASE_URL = "https://e-commerce-major-project1-backend.onrender.com";
 
 const fixImageURL = (img) => {
   if (!img) return "";
   return img.startsWith("http") ? img : `${BASE_URL}${img}`;
 };
-
 
 export const listProducts = () => async (dispatch) => {
   try {
@@ -51,7 +44,6 @@ export const listProducts = () => async (dispatch) => {
   }
 };
 
-
 export const getProductDetails = (id) => async (dispatch) => {
   try {
     dispatch({ type: PRODUCT_DETAILS_REQUEST });
@@ -69,7 +61,6 @@ export const getProductDetails = (id) => async (dispatch) => {
     });
   }
 };
-
 
 export const deleteProduct = (id) => async (dispatch) => {
   try {
@@ -105,10 +96,7 @@ export const updateProduct = (id, updatedData) => async (dispatch) => {
   try {
     dispatch({ type: PRODUCT_UPDATE_REQUEST });
 
-    const { data } = await API.put(
-      `admin/products/update/${id}/`,
-      updatedData
-    );
+    const { data } = await API.put(`admin/products/update/${id}/`, updatedData);
 
     dispatch({ type: PRODUCT_UPDATE_SUCCESS, payload: data });
   } catch (error) {

@@ -1,12 +1,9 @@
-
-
 export const getImageURL = (imagePath) => {
   if (!imagePath) return "/images/placeholder.png";
 
-  
   if (imagePath.startsWith("http")) {
     return imagePath;
   }
 
-  return `http://127.0.0.1:8000${imagePath}`;
+  return `https://e-commerce-major-project1-backend.onrender.com${imagePath}`;
 };

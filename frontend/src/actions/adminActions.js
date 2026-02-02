@@ -1,14 +1,11 @@
 import API from "../api";
 
-
-
 export const getAdminUsers = () => async (dispatch) => {
   try {
     dispatch({ type: "ADMIN_USERS_REQUEST" });
 
     const { data } = await API.get("admin/users/");
     dispatch({ type: "ADMIN_USERS_SUCCESS", payload: data });
-
   } catch (error) {
     dispatch({
       type: "ADMIN_USERS_FAIL",
@@ -25,8 +22,7 @@ export const deleteAdminUser = (id) => async (dispatch) => {
 
     dispatch({ type: "ADMIN_USER_DELETE_SUCCESS" });
 
-    dispatch(getAdminUsers()); 
-
+    dispatch(getAdminUsers());
   } catch (error) {
     dispatch({
       type: "ADMIN_USER_DELETE_FAIL",
@@ -35,16 +31,12 @@ export const deleteAdminUser = (id) => async (dispatch) => {
   }
 };
 
-
-
-
 export const getAdminProducts = () => async (dispatch) => {
   try {
     dispatch({ type: "ADMIN_PRODUCTS_REQUEST" });
 
     const { data } = await API.get("admin/products/");
     dispatch({ type: "ADMIN_PRODUCTS_SUCCESS", payload: data });
-
   } catch (error) {
     dispatch({
       type: "ADMIN_PRODUCTS_FAIL",
@@ -61,8 +53,7 @@ export const deleteAdminProduct = (id) => async (dispatch) => {
 
     dispatch({ type: "ADMIN_PRODUCT_DELETE_SUCCESS" });
 
-    dispatch(getAdminProducts()); 
-
+    dispatch(getAdminProducts());
   } catch (error) {
     dispatch({
       type: "ADMIN_PRODUCT_DELETE_FAIL",
@@ -71,15 +62,12 @@ export const deleteAdminProduct = (id) => async (dispatch) => {
   }
 };
 
-
-
 export const getAdminOrders = () => async (dispatch) => {
   try {
     dispatch({ type: "ADMIN_ORDERS_REQUEST" });
 
     const { data } = await API.get("admin/orders/");
     dispatch({ type: "ADMIN_ORDERS_SUCCESS", payload: data });
-
   } catch (error) {
     dispatch({
       type: "ADMIN_ORDERS_FAIL",
@@ -92,14 +80,10 @@ export const updateAdminOrder = (id, updateData) => async (dispatch) => {
   try {
     dispatch({ type: "ADMIN_ORDER_UPDATE_REQUEST" });
 
-    const { data } = await API.put(
-      `admin/orders/update/${id}/`,
-      updateData
-    );
+    const { data } = await API.put(`admin/orders/update/${id}/`, updateData);
 
     dispatch({ type: "ADMIN_ORDER_UPDATE_SUCCESS", payload: data });
     dispatch(getAdminOrders());
-
   } catch (error) {
     dispatch({
       type: "ADMIN_ORDER_UPDATE_FAIL",
