@@ -14,7 +14,7 @@ DEBUG = os.environ.get("DEBUG", "False") == "True"
 ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
-    ".onrender.com",   # ✅ Allows your Render backend
+    ".onrender.com",   # Allows all Render subdomains
 ]
 
 # APPLICATIONS
@@ -29,7 +29,7 @@ INSTALLED_APPS = [
     # Third-party
     "corsheaders",
     "rest_framework",
-    "whitenoise",  # ✅ Added for static files on Render
+    "whitenoise",  # Needed for static files on Render
 
     # Local app
     "app",
@@ -73,7 +73,7 @@ TEMPLATES = [
     },
 ]
 
-# DATABASE (SQLite — Render supports this for small projects)
+# DATABASE (SQLite — OK for small Render projects)
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
@@ -95,7 +95,7 @@ REST_FRAMEWORK = {
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
-# STATIC FILES (VERY IMPORTANT FOR RENDER)
+# ✅ STATIC FILES (CRITICAL FOR RENDER)
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
