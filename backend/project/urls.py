@@ -4,17 +4,22 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.http import JsonResponse
 
+# ✅ Root endpoint (VERY IMPORTANT for Render)
+def home(request):
+    return JsonResponse({"message": "Backend is running"})
+
 # ✅ Health check for Render
 def health_check(request):
     return JsonResponse({"status": "ok"})
 
 urlpatterns = [
+    path("", home),   # ✅ ADDED (fixes your timeout issue)
     path("admin/", admin.site.urls),
 
     # Your API routes
     path("api/", include("app.urls")),
 
-    # ✅ IMPORTANT for Render
+    # Health check
     path("healthz/", health_check),
 ]
 
