@@ -13,13 +13,13 @@ def health_check(request):
     return JsonResponse({"status": "ok"})
 
 urlpatterns = [
-    path("", home),   # ✅ Fixes Render timeout issue
-    path("healthz/", health_check),  # ✅ Render health check
+    path("", home),                 # ✅ Render root check
+    path("healthz/", health_check), # ✅ Render health check
     path("admin/", admin.site.urls),
 
     # Your API routes (unchanged)
     path("api/", include("app.urls")),
 ]
 
-# ✅ Serve media (local + Render)
+# ✅ IMPORTANT: Serve media files properly (LOCAL + RENDER)
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
