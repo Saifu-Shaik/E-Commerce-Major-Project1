@@ -22,7 +22,7 @@ class UserProfile(models.Model):
 
 
 # ============================================================
-# PRODUCT
+# PRODUCT  ✅ <-- IMPORTANT CHANGE HERE
 # ============================================================
 class Product(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
@@ -31,7 +31,9 @@ class Product(models.Model):
     brand = models.CharField(max_length=200, blank=True, default="")
     countInStock = models.IntegerField(default=0)
     description = models.TextField(blank=True, default="")
-    image = models.ImageField(upload_to="uploads/", blank=True, null=True)
+
+    # 🔥 CHANGED: ImageField → URLField (for direct image links)
+    image = models.URLField(max_length=500, blank=True, null=True)
 
     createdAt = models.DateTimeField(auto_now_add=True)
 
