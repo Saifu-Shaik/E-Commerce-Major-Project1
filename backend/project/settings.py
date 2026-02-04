@@ -1,23 +1,29 @@
 from pathlib import Path
 import os
 
-# Base directory
+# =========================
+# BASE DIRECTORY
+# =========================
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# =========================
 # SECURITY
+# =========================
 SECRET_KEY = os.environ.get("SECRET_KEY", "fallback-secret-key")
 
-# ✅ IMPORTANT FOR DEPLOYMENT
+# ✅ CORRECT WAY FOR RENDER
 DEBUG = os.environ.get("DEBUG", "False") == "True"
 
-# ✅ UPDATED FOR RENDER
+# ✅ ALLOWED HOSTS (RENDER SAFE)
 ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
-    ".onrender.com",   # Allows all Render subdomains
+    ".onrender.com",  # Allows all Render subdomains
 ]
 
-# APPLICATIONS
+# =========================
+# INSTALLED APPS
+# =========================
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -31,16 +37,18 @@ INSTALLED_APPS = [
     "rest_framework",
     "whitenoise",  # Needed for static files on Render
 
-    # Local app
+    # Your app
     "app",
 ]
 
+# =========================
 # MIDDLEWARE
+# =========================
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
 
-    "whitenoise.middleware.WhiteNoiseMiddleware",  # ✅ IMPORTANT for static files
+    "whitenoise.middleware.WhiteNoiseMiddleware",  # ✅ Important for static files
 
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -51,12 +59,15 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-# URL CONFIG
+# =========================
+# URL & WSGI
+# =========================
 ROOT_URLCONF = "project.urls"
-
 WSGI_APPLICATION = "project.wsgi.application"
 
+# =========================
 # TEMPLATES
+# =========================
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
@@ -73,7 +84,9 @@ TEMPLATES = [
     },
 ]
 
+# =========================
 # DATABASE (SQLite — OK for small Render projects)
+# =========================
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
@@ -81,7 +94,9 @@ DATABASES = {
     }
 }
 
+# =========================
 # DJANGO REST FRAMEWORK
+# =========================
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
@@ -91,23 +106,33 @@ REST_FRAMEWORK = {
     ),
 }
 
-# ✅ CORS (React ↔ Django)
+# =========================
+# CORS (REACT ↔ DJANGO)
+# =========================
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
-# ✅ STATIC FILES (CRITICAL FOR RENDER)
+# =========================
+# STATIC FILES (CRITICAL FOR RENDER)
+# =========================
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-# MEDIA FILES
+# =========================
+# MEDIA FILES (YOUR IMAGE FIX)
+# =========================
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
+# =========================
 # DEFAULT PRIMARY KEY
+# =========================
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# EMAIL CONFIG (unchanged)
+# =========================
+# EMAIL CONFIG (UNCHANGED)
+# =========================
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
