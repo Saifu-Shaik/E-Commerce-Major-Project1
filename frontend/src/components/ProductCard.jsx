@@ -1,12 +1,13 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { getImageURL } from "../utils/imageHelper";
 
 const ProductCard = ({ product }) => {
   return (
     <div className="card p-3">
       <Link to={`/product/${product.id}`}>
         <img
-          src={product.image}
+          src={getImageURL(product.image)}
           alt={product.name}
           style={{
             width: "100%",

@@ -4,6 +4,7 @@ import { createOrder } from "../actions/orderActions";
 import { useNavigate } from "react-router-dom";
 import Loader from "../components/Loader";
 import Message from "../components/Message";
+import { getImageURL } from "../utils/imageHelper";
 
 const PlaceOrderScreen = () => {
   const dispatch = useDispatch();
@@ -11,7 +12,7 @@ const PlaceOrderScreen = () => {
 
   const cart = useSelector((state) => state.cart);
   const orderCreate = useSelector((state) => state.orderCreate);
-  const { loading, success, order, error } = orderCreate;
+  const { loading, success, error } = orderCreate;
 
   // Calculate totals
   cart.itemsPrice = cart.cartItems.reduce(
@@ -38,7 +39,6 @@ const PlaceOrderScreen = () => {
 
   useEffect(() => {
     if (success) {
-      
       setTimeout(() => {
         navigate("/");
       }, 1500);
@@ -50,6 +50,7 @@ const PlaceOrderScreen = () => {
       <button className="btn btn-secondary mb-3" onClick={() => navigate(-1)}>
         ⬅ Back
       </button>
+
       {loading && <Loader />}
       {error && <Message variant="danger">{error}</Message>}
 
@@ -67,12 +68,18 @@ const PlaceOrderScreen = () => {
           <p>{cart.paymentMethod}</p>
 
           <h4>Order Items</h4>
+
           {cart.cartItems.length === 0 ? (
             <Message>No items in cart.</Message>
           ) : (
             cart.cartItems.map((item) => (
               <div key={item.product} className="d-flex p-2 border-bottom">
-                <img src={item.image} alt={item.name} width="60" />
+                <img
+                  src={getImageURL(item.image)}
+                  alt={item.name}
+                  width="60"
+                  style={{ objectFit: "contain" }}
+                />
                 <div className="ms-3">
                   <strong>{item.name}</strong>
                   <p>
@@ -107,7 +114,7 @@ const PlaceOrderScreen = () => {
       {success && (
         <div className="text-center mt-3">
           <Loader />
-          <p>Hurray!! Order placed successfully🎉🎉! Redirecting...</p>
+          <p>Hurray!! Order placed successfully 🎉🎉! Redirecting...</p>
         </div>
       )}
     </div>

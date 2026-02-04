@@ -19,11 +19,18 @@ import {
 
 const BASE_URL = "https://e-commerce-major-project1-backend.onrender.com";
 
+// --- Safe image URL helper ---
 const fixImageURL = (img) => {
   if (!img) return "";
-  return img.startsWith("http") ? img : `${BASE_URL}${img}`;
+
+  // If backend already sends full URL, keep it
+  if (img.startsWith("http")) return img;
+
+  // Ensure no double slashes
+  return `${BASE_URL}${img.startsWith("/") ? img : "/" + img}`;
 };
 
+// ---------- LIST PRODUCTS ----------
 export const listProducts = () => async (dispatch) => {
   try {
     dispatch({ type: PRODUCT_LIST_REQUEST });
@@ -44,6 +51,7 @@ export const listProducts = () => async (dispatch) => {
   }
 };
 
+// ---------- GET PRODUCT DETAILS ----------
 export const getProductDetails = (id) => async (dispatch) => {
   try {
     dispatch({ type: PRODUCT_DETAILS_REQUEST });
@@ -62,6 +70,7 @@ export const getProductDetails = (id) => async (dispatch) => {
   }
 };
 
+// ---------- DELETE PRODUCT (ADMIN) ----------
 export const deleteProduct = (id) => async (dispatch) => {
   try {
     dispatch({ type: PRODUCT_DELETE_REQUEST });
@@ -77,11 +86,14 @@ export const deleteProduct = (id) => async (dispatch) => {
   }
 };
 
+// ---------- CREATE PRODUCT (ADMIN) ----------
 export const createProduct = (productData) => async (dispatch) => {
   try {
     dispatch({ type: PRODUCT_CREATE_REQUEST });
 
-    const { data } = await API.post("admin/products/create/", productData);
+    const { data } = await API.post("admin/products/create/", productData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
 
     dispatch({ type: PRODUCT_CREATE_SUCCESS, payload: data });
   } catch (error) {
@@ -92,11 +104,18 @@ export const createProduct = (productData) => async (dispatch) => {
   }
 };
 
+// ---------- UPDATE PRODUCT (ADMIN) ----------
 export const updateProduct = (id, updatedData) => async (dispatch) => {
   try {
     dispatch({ type: PRODUCT_UPDATE_REQUEST });
 
-    const { data } = await API.put(`admin/products/update/${id}/`, updatedData);
+    const { data } = await API.put(
+      `admin/products/update/${id}/`,
+      updatedData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      },
+    );
 
     dispatch({ type: PRODUCT_UPDATE_SUCCESS, payload: data });
   } catch (error) {

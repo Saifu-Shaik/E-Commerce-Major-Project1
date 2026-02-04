@@ -19,7 +19,9 @@ const ProductScreen = () => {
   const [qty, setQty] = useState(1);
 
   useEffect(() => {
-    if (id) dispatch(getProductDetails(id));
+    if (id) {
+      dispatch(getProductDetails(id));
+    }
   }, [dispatch, id]);
 
   const addToCartHandler = () => {
@@ -41,9 +43,9 @@ const ProductScreen = () => {
           {typeof error === "object" ? JSON.stringify(error) : error}
         </Message>
       ) : product ? (
-        <div className="row">
-          
-          <div className="col-md-6">
+        <div className="row align-items-start">
+          {/* Product Image */}
+          <div className="col-md-6 mb-3">
             <img
               src={getImageURL(product.image)}
               alt={product.name}
@@ -52,13 +54,14 @@ const ProductScreen = () => {
             />
           </div>
 
-          
+          {/* Product Details */}
           <div className="col-md-6">
             <h3 className="fw-bold">{product.name}</h3>
-            <p className="fw-bold mt-3">Brand : {product.brand}</p>
+            <p className="fw-bold mt-3">Brand: {product.brand}</p>
             <p className="text-muted">{product.description}</p>
 
             <h4 className="text-success fw-bold">₹{product.price}</h4>
+
             <p>
               <strong>Stock:</strong>{" "}
               {product.countInStock > 0 ? (
@@ -68,7 +71,6 @@ const ProductScreen = () => {
               )}
             </p>
 
-            
             {product.countInStock > 0 && (
               <>
                 <div className="mb-3">

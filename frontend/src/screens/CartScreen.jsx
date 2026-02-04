@@ -11,41 +11,43 @@ const CartScreen = () => {
   const cart = useSelector((state) => state.cart);
   const { cartItems } = cart;
 
-  const userLogin = useSelector((state) => state.userLogin);
-  const { userInfo } = userLogin;
+  const { userInfo } = useSelector((state) => state.userLogin);
 
- 
   const checkoutHandler = () => {
     if (!userInfo) {
       alert("Please login or register first to continue checkout.");
       navigate("/login");
       return;
     }
-
     navigate("/shipping");
   };
+
+  const totalItems = cartItems.reduce((acc, item) => acc + item.qty, 0);
+  const totalPrice = cartItems
+    .reduce((acc, item) => acc + item.price * item.qty, 0)
+    .toFixed(2);
 
   return (
     <div className="container mt-4">
       <button className="btn btn-secondary mb-3" onClick={() => navigate(-1)}>
         ⬅ Back
       </button>
-      <br></br>
-      <h1>Shopping Cart 🛒</h1>
-      <br></br>
+
+      <h1 className="mt-2">Shopping Cart 🛒</h1>
+      <br />
 
       {cartItems.length === 0 ? (
         <h5>
-          -- Your cart is empty 🛒 : <Link to="/"> Go Back</Link>
+          Your cart is empty — <Link to="/">Go Back</Link>
         </h5>
       ) : (
         <div className="row">
-         
+          {/* Cart Items */}
           <div className="col-md-8">
             {cartItems.map((item) => (
               <div
                 key={item.product}
-                className="d-flex align-items-center mb-3 border p-2"
+                className="d-flex align-items-center mb-3 border p-2 rounded"
               >
                 <img
                   src={getImageURL(item.image)}
@@ -59,7 +61,7 @@ const CartScreen = () => {
                   <Link to={`/product/${item.product}`}>{item.name}</Link>
                 </div>
 
-                <div className="me-3">₹{item.price}</div>
+                <div className="me-3 fw-bold">₹{item.price}</div>
 
                 <button
                   className="btn btn-sm btn-danger"
@@ -71,20 +73,12 @@ const CartScreen = () => {
             ))}
           </div>
 
-         
+          {/* Order Summary */}
           <div className="col-md-4">
             <div className="card p-3">
-              <h4>
-                Subtotal ({cartItems.reduce((acc, item) => acc + item.qty, 0)})
-                items
-              </h4>
+              <h4>Subtotal ({totalItems}) items</h4>
 
-              <h5>
-                ₹
-                {cartItems
-                  .reduce((acc, item) => acc + item.price * item.qty, 0)
-                  .toFixed(2)}
-              </h5>
+              <h5 className="text-success">₹{totalPrice}</h5>
 
               <button
                 className="btn btn-primary w-100"

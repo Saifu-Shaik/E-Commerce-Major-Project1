@@ -18,16 +18,19 @@ const HomeScreen = () => {
   return (
     <div className="container mt-4">
       <h2>Latest Products :</h2>
-      <br></br>
+      <br />
+
       {loading && <Loader />}
       {error && <Message variant="danger">{error}</Message>}
 
       <div className="row">
-        {products?.map((product) => (
-          <div className="col-md-4 col-sm-6" key={product.id}>
-            <ProductCard product={product} />
-          </div>
-        ))}
+        {products && products.length > 0
+          ? products.map((product) => (
+              <div className="col-md-4 col-sm-6" key={product.id}>
+                <ProductCard product={product} />
+              </div>
+            ))
+          : !loading && <Message>No products found</Message>}
       </div>
     </div>
   );
