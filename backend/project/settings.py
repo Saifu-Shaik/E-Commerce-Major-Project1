@@ -1,5 +1,6 @@
 from pathlib import Path
 import os
+import dj_database_url   # <-- NEW (PostgreSQL connector)
 
 # =========================
 # BASE DIRECTORY
@@ -10,15 +11,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY
 # =========================
 SECRET_KEY = os.environ.get("SECRET_KEY", "fallback-secret-key")
-
-# ✅ CORRECT WAY FOR RENDER
 DEBUG = os.environ.get("DEBUG", "False") == "True"
 
-# ✅ ALLOWED HOSTS (RENDER SAFE)
 ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
-    ".onrender.com",  # Allows all Render subdomains
+    ".onrender.com",
 ]
 
 # =========================
@@ -35,7 +33,7 @@ INSTALLED_APPS = [
     # Third-party
     "corsheaders",
     "rest_framework",
-    "whitenoise",  # Needed for static files on Render
+    "whitenoise",
 
     # Your app
     "app",
@@ -47,12 +45,9 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
-
-    "whitenoise.middleware.WhiteNoiseMiddleware",  # ✅ Important for static files
-
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
-
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
@@ -85,13 +80,14 @@ TEMPLATES = [
 ]
 
 # =========================
-# DATABASE (SQLite — OK for small Render projects)
+# DATABASE (Render PostgreSQL)
 # =========================
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
+    "default": dj_database_url.parse(
+        os.environ.get("DATABASE_URL"),
+        conn_max_age=600,
+        ssl_require=True
+    )
 }
 
 # =========================
@@ -113,14 +109,14 @@ CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
 # =========================
-# STATIC FILES (CRITICAL FOR RENDER)
+# STATIC FILES
 # =========================
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # =========================
-# MEDIA FILES (YOUR IMAGE FIX)
+# MEDIA FILES
 # =========================
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
@@ -131,7 +127,7 @@ MEDIA_ROOT = BASE_DIR / "media"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # =========================
-# EMAIL CONFIG (UNCHANGED)
+# EMAIL CONFIG
 # =========================
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
@@ -140,5 +136,4 @@ EMAIL_USE_TLS = True
 
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
-
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
