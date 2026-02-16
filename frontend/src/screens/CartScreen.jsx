@@ -2,7 +2,6 @@ import React from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { removeFromCart } from "../actions/cartActions";
 import { Link, useNavigate } from "react-router-dom";
-import { getImageURL } from "../utils/imageHelper";
 
 const CartScreen = () => {
   const dispatch = useDispatch();
@@ -27,6 +26,11 @@ const CartScreen = () => {
     .reduce((acc, item) => acc + item.price * item.qty, 0)
     .toFixed(2);
 
+  const handleImgError = (e) => {
+    e.target.onerror = null;
+    e.target.src = "https://i.imgur.com/Qp7QZ8G.png"; // fallback image
+  };
+
   return (
     <div className="container mt-4">
       <button className="btn btn-secondary mb-3" onClick={() => navigate(-1)}>
@@ -50,8 +54,10 @@ const CartScreen = () => {
                 className="d-flex align-items-center mb-3 border p-2 rounded"
               >
                 <img
-                  src={getImageURL(item.image)}
+                  src={item.image || "https://i.imgur.com/Qp7QZ8G.png"}
                   alt={item.name}
+                  referrerPolicy="no-referrer"
+                  onError={handleImgError}
                   width="80"
                   height="80"
                   style={{ objectFit: "contain", borderRadius: "5px" }}

@@ -4,7 +4,6 @@ import { createOrder } from "../actions/orderActions";
 import { useNavigate } from "react-router-dom";
 import Loader from "../components/Loader";
 import Message from "../components/Message";
-import { getImageURL } from "../utils/imageHelper";
 
 const PlaceOrderScreen = () => {
   const dispatch = useDispatch();
@@ -45,6 +44,11 @@ const PlaceOrderScreen = () => {
     }
   }, [success, navigate]);
 
+  const handleImgError = (e) => {
+    e.target.onerror = null;
+    e.target.src = "https://i.imgur.com/Qp7QZ8G.png";
+  };
+
   return (
     <div className="container mt-4">
       <button className="btn btn-secondary mb-3" onClick={() => navigate(-1)}>
@@ -75,9 +79,11 @@ const PlaceOrderScreen = () => {
             cart.cartItems.map((item) => (
               <div key={item.product} className="d-flex p-2 border-bottom">
                 <img
-                  src={getImageURL(item.image)}
+                  src={item.image || "https://i.imgur.com/Qp7QZ8G.png"}
                   alt={item.name}
                   width="60"
+                  referrerPolicy="no-referrer"
+                  onError={handleImgError}
                   style={{ objectFit: "contain" }}
                 />
                 <div className="ms-3">

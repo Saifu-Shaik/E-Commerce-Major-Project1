@@ -12,7 +12,7 @@ const ProductEditScreen = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Fetch Product
+  // ================= FETCH PRODUCT =================
   useEffect(() => {
     const fetchProduct = async () => {
       try {
@@ -28,30 +28,44 @@ const ProductEditScreen = () => {
     fetchProduct();
   }, [id]);
 
-  // Update Product (JSON — NOT multipart)
+  // validate direct image link
+  const isValidImageUrl = (url) => {
+    return /(https?:\/\/.*\.(?:png|jpg|jpeg|webp))/i.test(url);
+  };
+
+  // ================= UPDATE PRODUCT =================
   const updateHandler = async (e) => {
     e.preventDefault();
     setError("");
-    setLoading(true);
+
+    if (!isValidImageUrl(product.image)) {
+      setError("Please enter a valid direct image link (jpg, png, webp)");
+      return;
+    }
 
     try {
+      setLoading(true);
+
       await API.put(`admin/products/update/${id}/`, {
         name: product.name,
         brand: product.brand,
-        price: product.price,
-        countInStock: product.countInStock,
+        price: Number(product.price),
+        countInStock: Number(product.countInStock),
         description: product.description,
-        image_url: product.image, // 🔥 send direct image URL
+        image: product.image, // ⭐⭐⭐ CORRECT FIELD NAME
       });
 
+      alert("Product Updated Successfully ✅");
       navigate("/admin/products");
     } catch (err) {
+      console.log(err.response?.data);
       setError("Product update failed. Please check your inputs.");
     } finally {
       setLoading(false);
     }
   };
 
+  // ================= UI =================
   return (
     <div className="container mt-4" style={{ maxWidth: "600px" }}>
       <button className="btn btn-secondary mb-3" onClick={() => navigate(-1)}>
@@ -123,7 +137,6 @@ const ProductEditScreen = () => {
             ></textarea>
           </div>
 
-          {/* 🔥 Image URL instead of file */}
           <div className="mb-3">
             <label>Product Image URL</label>
             <input
@@ -134,9 +147,10 @@ const ProductEditScreen = () => {
               onChange={(e) =>
                 setProduct({ ...product, image: e.target.value })
               }
+              required
             />
             <small className="text-muted">
-              Only direct image links are allowed (jpg/png/webp)
+              Only direct image links allowed (jpg/png/webp)
             </small>
           </div>
 

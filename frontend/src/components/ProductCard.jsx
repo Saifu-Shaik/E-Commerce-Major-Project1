@@ -1,14 +1,20 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { getImageURL } from "../utils/imageHelper";
 
 const ProductCard = ({ product }) => {
+  const handleImgError = (e) => {
+    e.target.onerror = null;
+    e.target.src = "https://i.imgur.com/Qp7QZ8G.png"; // fallback image
+  };
+
   return (
     <div className="card p-3">
       <Link to={`/product/${product.id}`}>
         <img
-          src={getImageURL(product.image)}
+          src={product.image || "https://i.imgur.com/Qp7QZ8G.png"}
           alt={product.name}
+          referrerPolicy="no-referrer"
+          onError={handleImgError}
           style={{
             width: "100%",
             height: "220px",

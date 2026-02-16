@@ -10,10 +10,10 @@ const ProductCreateScreen = () => {
   const [price, setPrice] = useState("");
   const [countInStock, setCountInStock] = useState("");
   const [description, setDescription] = useState("");
-  const [image, setImage] = useState(""); // URL
+  const [image, setImage] = useState("");
   const [error, setError] = useState("");
 
-  // simple direct-image validator
+  // validate direct image link
   const isValidImageUrl = (url) => {
     return /(https?:\/\/.*\.(?:png|jpg|jpeg|webp))/i.test(url);
   };
@@ -29,16 +29,18 @@ const ProductCreateScreen = () => {
 
     try {
       await API.post("admin/products/create/", {
-        name,
-        brand,
-        price,
-        countInStock,
-        description,
-        image_url: image, // 🔥 correct field for backend
+        name: name,
+        brand: brand,
+        price: Number(price),
+        countInStock: Number(countInStock),
+        description: description,
+        image: image, // ⭐⭐⭐ CORRECT FIELD NAME (MOST IMPORTANT FIX)
       });
 
+      alert("Product Added Successfully ✅");
       navigate("/admin/products");
     } catch (err) {
+      console.log(err.response?.data);
       setError("Product creation failed. Please check inputs.");
     }
   };
@@ -59,6 +61,7 @@ const ProductCreateScreen = () => {
           <input
             className="form-control"
             required
+            value={name}
             onChange={(e) => setName(e.target.value)}
           />
         </div>
@@ -68,6 +71,7 @@ const ProductCreateScreen = () => {
           <input
             className="form-control"
             required
+            value={brand}
             onChange={(e) => setBrand(e.target.value)}
           />
         </div>
@@ -78,6 +82,7 @@ const ProductCreateScreen = () => {
             type="number"
             className="form-control"
             required
+            value={price}
             onChange={(e) => setPrice(e.target.value)}
           />
         </div>
@@ -88,6 +93,7 @@ const ProductCreateScreen = () => {
             type="number"
             className="form-control"
             required
+            value={countInStock}
             onChange={(e) => setCountInStock(e.target.value)}
           />
         </div>
@@ -96,6 +102,7 @@ const ProductCreateScreen = () => {
           <label>Description</label>
           <textarea
             className="form-control"
+            value={description}
             onChange={(e) => setDescription(e.target.value)}
           ></textarea>
         </div>
@@ -107,6 +114,7 @@ const ProductCreateScreen = () => {
             className="form-control"
             placeholder="Paste direct image link (https://...)"
             required
+            value={image}
             onChange={(e) => setImage(e.target.value)}
           />
         </div>
@@ -116,8 +124,7 @@ const ProductCreateScreen = () => {
 
       <div className="alert alert-info mt-4">
         <b>Note:</b> Only direct image links are accepted. Uploading image files
-        is disabled because server storage is temporary. Use image URLs from
-        Unsplash, Pexels, or CDN product links.
+        is disabled because server storage is temporary.
       </div>
     </div>
   );

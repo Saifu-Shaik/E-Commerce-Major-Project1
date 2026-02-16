@@ -5,7 +5,6 @@ import Loader from "../components/Loader";
 import Message from "../components/Message";
 import { useParams, useNavigate } from "react-router-dom";
 import { addToCart } from "../actions/cartActions";
-import { getImageURL } from "../utils/imageHelper";
 
 const ProductScreen = () => {
   const { id } = useParams();
@@ -30,6 +29,11 @@ const ProductScreen = () => {
     navigate("/cart");
   };
 
+  const handleImgError = (e) => {
+    e.target.onerror = null;
+    e.target.src = "https://i.imgur.com/Qp7QZ8G.png"; // fallback
+  };
+
   return (
     <div className="container mt-3">
       <button className="btn btn-secondary mb-3" onClick={() => navigate(-1)}>
@@ -47,8 +51,10 @@ const ProductScreen = () => {
           {/* Product Image */}
           <div className="col-md-6 mb-3">
             <img
-              src={getImageURL(product.image)}
+              src={product.image || "https://i.imgur.com/Qp7QZ8G.png"}
               alt={product.name}
+              referrerPolicy="no-referrer"
+              onError={handleImgError}
               className="img-fluid border rounded"
               style={{ objectFit: "contain", maxHeight: "420px" }}
             />

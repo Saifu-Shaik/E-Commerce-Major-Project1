@@ -1,15 +1,14 @@
-export const getImageURL = (imagePath) => {
-  // If no image, return placeholder
-  if (!imagePath) return "/images/placeholder.png";
-
-  // If backend already sends a full URL, use it directly
-  if (imagePath.startsWith("http")) {
-    return imagePath;
+export const getImageURL = (image) => {
+  // If empty image
+  if (!image || image === "null") {
+    return "https://dummyimage.com/500x500/eeeeee/000000&text=No+Image";
   }
 
-  // Otherwise, prefix with your backend URL
-  const BACKEND_URL = "https://e-commerce-major-project1-backend.onrender.com";
+  // If already full URL (Cloudinary, Imgur, etc.)
+  if (typeof image === "string" && image.startsWith("http")) {
+    return image;
+  }
 
-  // Ensure no double slashes
-  return `${BACKEND_URL}${imagePath.startsWith("/") ? imagePath : "/" + imagePath}`;
+  // Otherwise just return as is
+  return image;
 };
