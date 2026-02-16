@@ -21,7 +21,7 @@ class UserProfile(models.Model):
 
 
 # ============================================================
-# PRODUCT (UPLOAD IMAGE ONLY)
+# PRODUCT (URL IMAGE STORAGE — PERMANENT ON RENDER)
 # ============================================================
 class Product(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
@@ -31,8 +31,8 @@ class Product(models.Model):
     countInStock = models.IntegerField(default=0)
     description = models.TextField(blank=True, default="")
 
-    # ✅ Correct ecommerce image storage
-    image = models.ImageField(upload_to="products/", null=True, blank=True)
+    # ⭐ IMPORTANT CHANGE (Now accepts image links)
+    image = models.URLField(max_length=500, blank=True, default="")
 
     createdAt = models.DateTimeField(auto_now_add=True)
 
@@ -73,8 +73,8 @@ class OrderItem(models.Model):
     qty = models.IntegerField(default=1)
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
-    # store image path at order time
-    image = models.CharField(max_length=300, blank=True, default="")
+    # store image URL at order time
+    image = models.CharField(max_length=500, blank=True, default="")
 
     def __str__(self):
         return f"{self.name} ({self.qty})"
@@ -97,7 +97,7 @@ class ShippingAddress(models.Model):
 
 
 # ============================================================
-# SIGNALS - AUTO CREATE PROFILE
+# SIGNALS — AUTO CREATE PROFILE
 # ============================================================
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):

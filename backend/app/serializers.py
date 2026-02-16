@@ -63,13 +63,13 @@ class RegisterSerializer(serializers.ModelSerializer):
         return value
 
     def create(self, validated_data):
-        # ALWAYS NORMAL USER
         user = User.objects.create_user(
             username=validated_data["username"],
             email=validated_data["email"],
             password=validated_data["password"],
         )
 
+        # Force normal user
         user.is_staff = False
         user.is_superuser = False
         user.save()
@@ -78,20 +78,23 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 
 # ============================================================
-# PRODUCT SERIALIZER (FIX IMAGE URL)
+# PRODUCT SERIALIZER (FOR URL IMAGES — FINAL FIX)
 # ============================================================
 class ProductSerializer(serializers.ModelSerializer):
-    image = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
         fields = "__all__"
 
-    def get_image(self, obj):
-        request = self.context.get("request")
-        if obj.image:
-            return request.build_absolute_uri(obj.image.url)
-        return ""
+    # No conversion needed — image already full URL
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+
+        # If no image, provide placeholder
+        if not data.get("image"):
+            data["image"] = "https://via.placeholder.com/500x500.png?text=No+Image"
+
+        return data
 
 
 # ============================================================
