@@ -6,7 +6,7 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from rest_framework_simplejwt.tokens import RefreshToken
 
-# 🔐 Forgot password imports
+# Forgot password
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
@@ -23,11 +23,12 @@ from .serializers import (
 )
 
 # ============================================================
-# TOKEN GENERATOR
+# TOKEN
 # ============================================================
 def generate_tokens(user):
     refresh = RefreshToken.for_user(user)
     return {"access": str(refresh.access_token), "refresh": str(refresh)}
+
 
 # ============================================================
 # AUTH
@@ -60,8 +61,6 @@ def registerUser(request):
 
     if serializer.is_valid():
         user = serializer.save()
-
-        # 🔐 SECURITY: Never allow admin creation
         user.is_staff = False
         user.is_superuser = False
         user.save()
@@ -78,6 +77,7 @@ def registerUser(request):
         })
 
     return Response(serializer.errors, status=400)
+
 
 # ============================================================
 # PROFILE
@@ -125,6 +125,7 @@ def updateUserProfile(request):
         **generate_tokens(user),
     })
 
+
 # ============================================================
 # ADMIN USERS
 # ============================================================
@@ -143,19 +144,20 @@ def adminDeleteUser(request, pk):
     except User.DoesNotExist:
         return Response({"detail": "User not found"}, status=404)
 
+
 # ============================================================
-# PRODUCTS
+# PRODUCTS (URL IMAGE SUPPORT)
 # ============================================================
 @api_view(["GET"])
 def getProducts(request):
-    return Response(ProductSerializer(Product.objects.all(), many=True, context={"request": request}).data)
+    return Response(ProductSerializer(Product.objects.all(), many=True).data)
 
 
 @api_view(["GET"])
 def getProduct(request, pk):
     try:
         product = Product.objects.get(id=pk)
-        return Response(ProductSerializer(product, context={"request": request}).data)
+        return Response(ProductSerializer(product).data)
     except Product.DoesNotExist:
         return Response({"detail": "Product not found"}, status=404)
 
@@ -163,24 +165,29 @@ def getProduct(request, pk):
 @api_view(["GET"])
 @permission_classes([IsAdminUser])
 def adminGetProducts(request):
-    return Response(ProductSerializer(Product.objects.all(), many=True, context={"request": request}).data)
+    return Response(ProductSerializer(Product.objects.all(), many=True).data)
 
 
+# ⭐ CREATE PRODUCT (URL)
 @api_view(["POST"])
 @permission_classes([IsAdminUser])
 def createProduct(request):
-    product = Product.objects.create(
-        user=request.user,
-        name=request.data.get("name"),
-        brand=request.data.get("brand"),
-        price=request.data.get("price"),
-        countInStock=request.data.get("countInStock"),
-        description=request.data.get("description"),
-        image=request.FILES.get("image"),
-    )
-    return Response(ProductSerializer(product, context={"request": request}).data)
+    try:
+        product = Product.objects.create(
+            user=request.user,
+            name=request.data.get("name"),
+            brand=request.data.get("brand"),
+            price=request.data.get("price"),
+            countInStock=request.data.get("countInStock"),
+            description=request.data.get("description"),
+            image=request.data.get("image", "")   # IMPORTANT FIX
+        )
+        return Response(ProductSerializer(product).data)
+    except Exception as e:
+        return Response({"error": str(e)}, status=400)
 
 
+# ⭐ UPDATE PRODUCT (URL)
 @api_view(["PUT"])
 @permission_classes([IsAdminUser])
 def updateProduct(request, pk):
@@ -193,11 +200,11 @@ def updateProduct(request, pk):
         product.countInStock = request.data.get("countInStock", product.countInStock)
         product.description = request.data.get("description", product.description)
 
-        if request.FILES.get("image"):
-            product.image = request.FILES["image"]
+        if request.data.get("image") is not None:
+            product.image = request.data.get("image")
 
         product.save()
-        return Response(ProductSerializer(product, context={"request": request}).data)
+        return Response(ProductSerializer(product).data)
 
     except Product.DoesNotExist:
         return Response({"detail": "Product not found"}, status=404)
@@ -212,8 +219,9 @@ def deleteProduct(request, pk):
     except Product.DoesNotExist:
         return Response({"detail": "Product not found"}, status=404)
 
+
 # ============================================================
-# ORDERS
+# ORDERS (FIXED IMAGE STORAGE)
 # ============================================================
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
@@ -239,7 +247,7 @@ def addOrderItems(request):
             name=product.name,
             qty=item["qty"],
             price=item["price"],
-            image=str(product.image.url) if product.image else ""
+            image=product.image   # IMPORTANT FIX
         )
 
         product.countInStock -= item["qty"]
@@ -272,8 +280,9 @@ def adminUpdateOrder(request, pk):
     except Order.DoesNotExist:
         return Response({"detail": "Order not found"}, status=404)
 
+
 # ============================================================
-# 🔐 FORGOT PASSWORD (FINAL)
+# FORGOT PASSWORD
 # ============================================================
 token_generator = PasswordResetTokenGenerator()
 
@@ -290,22 +299,13 @@ def forgotPassword(request):
         frontend_url = getattr(settings, "FRONTEND_URL", "http://localhost:3000")
         reset_link = f"{frontend_url}/reset-password/{uid}/{token}/"
 
-        subject = "E-Mart Password Reset"
-        message = f"""
-Hello {user.username},
-
-You requested to reset your password.
-
-Click the link below:
-{reset_link}
-
-If you didn't request this, ignore this email.
-
-E-Mart Team
-"""
-
-        send_mail(subject, message, settings.EMAIL_HOST_USER, [email], fail_silently=False)
-
+        send_mail(
+            "E-Mart Password Reset",
+            f"Reset your password:\n{reset_link}",
+            settings.EMAIL_HOST_USER,
+            [email],
+            fail_silently=False,
+        )
     except User.DoesNotExist:
         pass
 
