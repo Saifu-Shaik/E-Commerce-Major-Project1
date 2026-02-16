@@ -79,10 +79,16 @@ class ProductSerializer(serializers.ModelSerializer):
         model = Product
         fields = "__all__"
 
-    # Prevent empty image crash + placeholder
+    def validate_image(self, value):
+        # Accept only http/https links
+        if value and not value.startswith("http"):
+            raise serializers.ValidationError("Only direct image URL allowed")
+        return value
+
     def to_representation(self, instance):
         data = super().to_representation(instance)
 
+        # fallback image
         if not data.get("image"):
             data["image"] = "https://via.placeholder.com/500x500.png?text=No+Image"
 
@@ -113,7 +119,6 @@ class OrderSerializer(serializers.ModelSerializer):
         model = Order
         fields = "__all__"
 
-    # CREATE ORDER SAFELY (important for checkout)
     def create(self, validated_data):
         order_items_data = validated_data.pop("orderItems")
         shipping_data = validated_data.pop("shippingAddress")
@@ -123,6 +128,19 @@ class OrderSerializer(serializers.ModelSerializer):
         ShippingAddress.objects.create(order=order, **shipping_data)
 
         for item in order_items_data:
-            OrderItem.objects.create(order=order, **item)
+            product = Product.objects.get(id=item["product"].id)
+
+            OrderItem.objects.create(
+                order=order,
+                product=product,
+                name=product.name,
+                qty=item["qty"],
+                price=item["price"],
+                image=product.image  # store image URL permanently
+            )
+
+            # reduce stock
+            product.countInStock -= item["qty"]
+            product.save()
 
         return order
