@@ -1,93 +1,136 @@
 import API from "../api";
 
-export const getAdminUsers = () => async (dispatch) => {
+/* ======================================================
+   HELPER: AUTH HEADER (SAFE)
+====================================================== */
+const getAuthConfig = (getState) => {
+  const state = getState();
+  const token =
+    state?.userLogin?.userInfo?.access || localStorage.getItem("accessToken");
+
+  return {
+    headers: {
+      Authorization: token ? `Bearer ${token}` : "",
+    },
+  };
+};
+
+/* ======================================================
+   ADMIN USERS
+====================================================== */
+
+export const getAdminUsers = () => async (dispatch, getState) => {
   try {
     dispatch({ type: "ADMIN_USERS_REQUEST" });
 
-    const { data } = await API.get("admin/users/");
+    const { data } = await API.get("admin/users/", getAuthConfig(getState));
+
     dispatch({ type: "ADMIN_USERS_SUCCESS", payload: data });
   } catch (error) {
     dispatch({
       type: "ADMIN_USERS_FAIL",
-      payload: error.response?.data?.detail || "Failed to load users",
+      payload:
+        error.response?.data?.detail || error.response?.data || error.message,
     });
   }
 };
 
-export const deleteAdminUser = (id) => async (dispatch) => {
+export const deleteAdminUser = (id) => async (dispatch, getState) => {
   try {
     dispatch({ type: "ADMIN_USER_DELETE_REQUEST" });
 
-    await API.delete(`admin/users/delete/${id}/`);
+    await API.delete(`admin/users/delete/${id}/`, getAuthConfig(getState));
 
     dispatch({ type: "ADMIN_USER_DELETE_SUCCESS" });
-
     dispatch(getAdminUsers());
   } catch (error) {
     dispatch({
       type: "ADMIN_USER_DELETE_FAIL",
-      payload: error.response?.data?.detail || "Failed to delete user",
+      payload:
+        error.response?.data?.detail || error.response?.data || error.message,
     });
   }
 };
 
-export const getAdminProducts = () => async (dispatch) => {
+/* ======================================================
+   ADMIN PRODUCTS
+====================================================== */
+
+export const getAdminProducts = () => async (dispatch, getState) => {
   try {
     dispatch({ type: "ADMIN_PRODUCTS_REQUEST" });
 
-    const { data } = await API.get("admin/products/");
+    const { data } = await API.get("admin/products/", getAuthConfig(getState));
+
     dispatch({ type: "ADMIN_PRODUCTS_SUCCESS", payload: data });
   } catch (error) {
     dispatch({
       type: "ADMIN_PRODUCTS_FAIL",
-      payload: error.response?.data?.detail || "Failed to load products",
+      payload:
+        error.response?.data?.detail || error.response?.data || error.message,
     });
   }
 };
 
-export const deleteAdminProduct = (id) => async (dispatch) => {
+export const deleteAdminProduct = (id) => async (dispatch, getState) => {
   try {
     dispatch({ type: "ADMIN_PRODUCT_DELETE_REQUEST" });
 
-    await API.delete(`admin/products/delete/${id}/`);
+    await API.delete(`admin/products/delete/${id}/`, getAuthConfig(getState));
 
     dispatch({ type: "ADMIN_PRODUCT_DELETE_SUCCESS" });
-
     dispatch(getAdminProducts());
   } catch (error) {
     dispatch({
       type: "ADMIN_PRODUCT_DELETE_FAIL",
-      payload: error.response?.data?.detail || "Failed to delete product",
+      payload:
+        error.response?.data?.detail || error.response?.data || error.message,
     });
   }
 };
 
-export const getAdminOrders = () => async (dispatch) => {
+/* ======================================================
+   ADMIN ORDERS
+====================================================== */
+
+export const getAdminOrders = () => async (dispatch, getState) => {
   try {
     dispatch({ type: "ADMIN_ORDERS_REQUEST" });
 
-    const { data } = await API.get("admin/orders/");
+    // ✅ Correct endpoint (this was causing 404 before)
+    const { data } = await API.get("admin/orders/", getAuthConfig(getState));
+
     dispatch({ type: "ADMIN_ORDERS_SUCCESS", payload: data });
   } catch (error) {
     dispatch({
       type: "ADMIN_ORDERS_FAIL",
-      payload: error.response?.data?.detail || "Failed to load orders",
+      payload:
+        error.response?.data?.detail || error.response?.data || error.message,
     });
   }
 };
 
-export const updateAdminOrder = (id, updateData) => async (dispatch) => {
-  try {
-    dispatch({ type: "ADMIN_ORDER_UPDATE_REQUEST" });
+export const updateAdminOrder =
+  (id, updateData) => async (dispatch, getState) => {
+    try {
+      dispatch({ type: "ADMIN_ORDER_UPDATE_REQUEST" });
 
-    const { data } = await API.put(`admin/orders/update/${id}/`, updateData);
+      // ✅ Correct update endpoint
+      const { data } = await API.put(
+        `admin/orders/update/${id}/`,
+        updateData,
+        getAuthConfig(getState),
+      );
 
-    dispatch({ type: "ADMIN_ORDER_UPDATE_SUCCESS", payload: data });
-    dispatch(getAdminOrders());
-  } catch (error) {
-    dispatch({
-      type: "ADMIN_ORDER_UPDATE_FAIL",
-      payload: error.response?.data?.detail || "Failed to update order",
-    });
-  }
-};
+      dispatch({ type: "ADMIN_ORDER_UPDATE_SUCCESS", payload: data });
+
+      // refresh list
+      dispatch(getAdminOrders());
+    } catch (error) {
+      dispatch({
+        type: "ADMIN_ORDER_UPDATE_FAIL",
+        payload:
+          error.response?.data?.detail || error.response?.data || error.message,
+      });
+    }
+  };

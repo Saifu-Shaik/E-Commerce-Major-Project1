@@ -16,7 +16,6 @@ const RegisterScreen = () => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     if (userInfo) navigate("/");
@@ -24,7 +23,8 @@ const RegisterScreen = () => {
 
   const submitHandler = (e) => {
     e.preventDefault();
-    dispatch(register(username, email, password, isAdmin));
+    // 🚀 No admin flag anymore
+    dispatch(register(username, email, password));
   };
 
   const getErrorText = () => {
@@ -78,17 +78,7 @@ const RegisterScreen = () => {
           />
         </div>
 
-        <div className="mb-3">
-          <label>Register As :</label>
-          <select
-            className="form-select mt-2"
-            value={isAdmin ? "true" : "false"}
-            onChange={(e) => setIsAdmin(e.target.value === "true")}
-          >
-            <option value="false">Normal User</option>
-            <option value="true">Admin</option>
-          </select>
-        </div>
+        {/* ❌ Admin option removed completely */}
 
         <button className="btn btn-primary w-100">Register</button>
       </form>

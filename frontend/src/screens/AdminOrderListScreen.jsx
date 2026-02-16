@@ -9,15 +9,39 @@ const AdminOrderListScreen = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  // Logged in user
+  const userLogin = useSelector((state) => state.userLogin);
+  const { userInfo } = userLogin;
+
+  // Orders state
   const adminOrders = useSelector((state) => state.adminOrders);
   const { loading, error, orders } = adminOrders;
 
+  // Update state (refresh after update)
   const adminOrderUpdate = useSelector((state) => state.adminOrderUpdate);
   const { success: updateSuccess } = adminOrderUpdate;
 
+  /*
+  =========================================================
+  SECURITY CHECK
+  =========================================================
+  */
   useEffect(() => {
+    // Not logged in
+    if (!userInfo) {
+      navigate("/login");
+      return;
+    }
+
+    // Not admin
+    if (!userInfo.isAdmin) {
+      navigate("/");
+      return;
+    }
+
+    // Load orders
     dispatch(getAdminOrders());
-  }, [dispatch, updateSuccess]);
+  }, [dispatch, navigate, userInfo, updateSuccess]);
 
   return (
     <div className="container mt-4">
@@ -30,10 +54,25 @@ const AdminOrderListScreen = () => {
 
       <h2 className="mb-3">Admin – Order Management</h2>
 
+      {/* Loading */}
       {loading && <Loader />}
-      {error && <Message variant="danger">{error}</Message>}
 
-      {!loading && !error && (
+      {/* Error */}
+      {error && (
+        <Message variant="danger">
+          {typeof error === "string"
+            ? error
+            : error?.detail || "Failed to load orders"}
+        </Message>
+      )}
+
+      {/* Empty */}
+      {!loading && !error && orders?.length === 0 && (
+        <Message>No orders found</Message>
+      )}
+
+      {/* Table */}
+      {!loading && !error && orders?.length > 0 && (
         <div className="table-responsive">
           <table className="table table-bordered table-hover">
             <thead className="table-light">
@@ -49,11 +88,10 @@ const AdminOrderListScreen = () => {
             </thead>
 
             <tbody>
-              {orders?.map((order) => (
+              {orders.map((order) => (
                 <tr key={order.id}>
                   <td>{order.id}</td>
 
-                 
                   <td>{order.user?.username || "—"}</td>
                   <td>{order.user?.email || "—"}</td>
 

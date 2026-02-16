@@ -16,18 +16,18 @@ const LoginScreen = () => {
     (state) => state.userLogin || {},
   );
 
-  
+  // 🔁 Redirect after login
   useEffect(() => {
-    if (userInfo) {
-      if (userInfo.isAdmin || userInfo.is_admin) {
-        navigate("/admin/dashboard");
-      } else {
-        navigate("/");
-      }
+    if (!userInfo) return;
+
+    if (userInfo.isAdmin === true) {
+      navigate("/admin/dashboard");
+    } else {
+      navigate("/");
     }
   }, [userInfo, navigate]);
 
-  
+  // 🔐 Submit
   const submitHandler = (e) => {
     e.preventDefault();
 
@@ -39,26 +39,28 @@ const LoginScreen = () => {
     dispatch(login(username, password));
   };
 
-  
+  // Better error formatting
   const getErrorText = () => {
     if (!error) return null;
     if (typeof error === "string") return error;
     if (typeof error === "object") return Object.values(error).join(", ");
-    return "Something went wrong";
+    return "Login failed. Please try again.";
   };
 
   return (
     <FormContainer>
-      <h1 className="mt-3">Hey!! Login Here 😊</h1>
+      <h1 className="mt-3 text-center">Hey!! Login Here 😊</h1>
 
       {loading && <Loader />}
 
       {error && (
-        <div className="alert alert-danger text-center">{getErrorText()}</div>
+        <div className="alert alert-danger text-center mt-3">
+          {getErrorText()}
+        </div>
       )}
 
       <form onSubmit={submitHandler} className="mt-3">
-        
+        {/* USERNAME */}
         <div className="mb-3">
           <label>Username :</label>
           <input
@@ -72,7 +74,7 @@ const LoginScreen = () => {
           />
         </div>
 
-        
+        {/* PASSWORD */}
         <div className="mb-3">
           <label>Password :</label>
           <input
@@ -86,7 +88,13 @@ const LoginScreen = () => {
           />
         </div>
 
-        
+        {/* 🔐 FORGOT PASSWORD */}
+        <div className="text-end mb-2">
+          <Link to="/forgot-password" className="text-decoration-none">
+            Forgot Password?
+          </Link>
+        </div>
+
         <button className="btn btn-primary w-100" type="submit">
           Login
         </button>

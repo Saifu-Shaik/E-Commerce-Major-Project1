@@ -1,10 +1,7 @@
-
-
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getAdminProducts, deleteAdminProduct } from "../actions/adminActions";
-
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Loader from "../components/Loader";
 import Message from "../components/Message";
 
@@ -12,21 +9,38 @@ const AdminProductListScreen = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  /* ================= USER ================= */
+  const { userInfo } = useSelector((state) => state.userLogin);
+
+  /* ================= PRODUCTS ================= */
   const adminProducts = useSelector((state) => state.adminProducts);
-  const { loading, products, error } = adminProducts;
+  const { loading, products = [], error } = adminProducts;
 
+  /* ================= DELETE ================= */
   const adminProductDelete = useSelector((state) => state.adminProductDelete);
+  const { success: deleteSuccess, error: deleteError } =
+    adminProductDelete || {};
 
-
-  const deleteSuccess = adminProductDelete?.success || false;
-  const deleteError = adminProductDelete?.error || null;
-
+  /* ================= AUTH PROTECTION ================= */
   useEffect(() => {
-    dispatch(getAdminProducts());
-  }, [dispatch, deleteSuccess]);
+    // Not logged in
+    if (!userInfo) {
+      navigate("/login");
+      return;
+    }
 
+    // Logged in but not admin
+    if (!userInfo.isAdmin) {
+      navigate("/");
+      return;
+    }
+
+    dispatch(getAdminProducts());
+  }, [dispatch, navigate, userInfo, deleteSuccess]);
+
+  /* ================= HANDLERS ================= */
   const deleteHandler = (id) => {
-    if (window.confirm("Are you sure you want to delete this product?")) {
+    if (window.confirm("Delete this product?")) {
       dispatch(deleteAdminProduct(id));
     }
   };
@@ -35,9 +49,20 @@ const AdminProductListScreen = () => {
     navigate("/admin/product/create");
   };
 
+  /* ================= ERROR TEXT FIX ================= */
+  const formatError = (err) => {
+    if (!err) return null;
+    if (typeof err === "string") return err;
+    if (err.detail) return err.detail;
+    return "Something went wrong";
+  };
+
   return (
     <div className="container mt-4">
-      <button className="btn btn-secondary mb-3" onClick={() => navigate(-1)}>
+      <button
+        className="btn btn-secondary mb-3"
+        onClick={() => navigate("/admin/dashboard")}
+      >
         ⬅ Back
       </button>
 
@@ -47,11 +72,24 @@ const AdminProductListScreen = () => {
         + Create Product
       </button>
 
-      {deleteError && <Message variant="danger">{deleteError}</Message>}
-      {error && <Message variant="danger">{error}</Message>}
+      {/* DELETE ERROR */}
+      {deleteError && (
+        <Message variant="danger">{formatError(deleteError)}</Message>
+      )}
+
+      {/* FETCH ERROR */}
+      {error && <Message variant="danger">{formatError(error)}</Message>}
+
+      {/* LOADING */}
       {loading && <Loader />}
 
-      {!loading && !error && (
+      {/* EMPTY STATE */}
+      {!loading && !error && products.length === 0 && (
+        <Message>No products found</Message>
+      )}
+
+      {/* TABLE */}
+      {!loading && !error && products.length > 0 && (
         <table className="table table-bordered table-striped mt-2">
           <thead>
             <tr className="table-light">
@@ -59,20 +97,12 @@ const AdminProductListScreen = () => {
               <th>Name</th>
               <th>Brand</th>
               <th>Stock</th>
-              <th style={{ width: "180px" }}>Actions</th>
+              <th style={{ width: "200px" }}>Actions</th>
             </tr>
           </thead>
 
           <tbody>
-            {products?.length === 0 && (
-              <tr>
-                <td colSpan="5" className="text-center">
-                  No products found.
-                </td>
-              </tr>
-            )}
-
-            {products?.map((p) => (
+            {products.map((p) => (
               <tr key={p.id}>
                 <td>{p.id}</td>
                 <td>{p.name}</td>
@@ -80,12 +110,12 @@ const AdminProductListScreen = () => {
                 <td>{p.countInStock}</td>
 
                 <td>
-                  <Link
-                    to={`/admin/product/${p.id}/edit`}
+                  <button
                     className="btn btn-sm btn-warning me-2"
+                    onClick={() => navigate(`/admin/product/${p.id}/edit`)}
                   >
                     Edit
-                  </Link>
+                  </button>
 
                   <button
                     className="btn btn-sm btn-danger"
