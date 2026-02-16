@@ -36,7 +36,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 # ============================================================
-# REGISTER (NORMAL USER ONLY — NO ADMIN CREATION)
+# REGISTER (NORMAL USER ONLY)
 # ============================================================
 class RegisterSerializer(serializers.ModelSerializer):
 
@@ -63,22 +63,15 @@ class RegisterSerializer(serializers.ModelSerializer):
         return value
 
     def create(self, validated_data):
-        user = User.objects.create_user(
-            username=validated_data["username"],
-            email=validated_data["email"],
-            password=validated_data["password"],
-        )
-
-        # Force normal user
+        user = User.objects.create_user(**validated_data)
         user.is_staff = False
         user.is_superuser = False
         user.save()
-
         return user
 
 
 # ============================================================
-# PRODUCT SERIALIZER (FOR URL IMAGES — FINAL FIX)
+# PRODUCT SERIALIZER (URL IMAGE SUPPORT)
 # ============================================================
 class ProductSerializer(serializers.ModelSerializer):
 
@@ -86,11 +79,10 @@ class ProductSerializer(serializers.ModelSerializer):
         model = Product
         fields = "__all__"
 
-    # No conversion needed — image already full URL
+    # Prevent empty image crash + placeholder
     def to_representation(self, instance):
         data = super().to_representation(instance)
 
-        # If no image, provide placeholder
         if not data.get("image"):
             data["image"] = "https://via.placeholder.com/500x500.png?text=No+Image"
 
@@ -115,8 +107,22 @@ class ShippingAddressSerializer(serializers.ModelSerializer):
 class OrderSerializer(serializers.ModelSerializer):
     orderItems = OrderItemSerializer(many=True)
     shippingAddress = ShippingAddressSerializer()
-    user = UserMiniSerializer()
+    user = UserMiniSerializer(read_only=True)
 
     class Meta:
         model = Order
         fields = "__all__"
+
+    # CREATE ORDER SAFELY (important for checkout)
+    def create(self, validated_data):
+        order_items_data = validated_data.pop("orderItems")
+        shipping_data = validated_data.pop("shippingAddress")
+
+        order = Order.objects.create(**validated_data)
+
+        ShippingAddress.objects.create(order=order, **shipping_data)
+
+        for item in order_items_data:
+            OrderItem.objects.create(order=order, **item)
+
+        return order
