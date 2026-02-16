@@ -1,3 +1,5 @@
+from dotenv import load_dotenv
+load_dotenv()
 from pathlib import Path
 import os
 import dj_database_url
@@ -12,14 +14,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # =========================================================
 SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-key")
 
-# Render automatically sets this → production mode
-DEBUG = os.environ.get("RENDER", "") == ""
+# Render sets RENDER=true automatically
+DEBUG = os.environ.get("RENDER") != "true"
 
 ALLOWED_HOSTS = [
     "127.0.0.1",
     "localhost",
     ".onrender.com",
 ]
+
+# 🔴 IMPORTANT — used in password reset email
+FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:3000")
 
 # =========================================================
 # APPS
@@ -35,7 +40,6 @@ INSTALLED_APPS = [
     "corsheaders",
     "rest_framework",
     "whitenoise",
-    "django_rest_passwordreset",   # 🔐 forgot password
 
     "app",
 ]
@@ -59,7 +63,7 @@ ROOT_URLCONF = "project.urls"
 WSGI_APPLICATION = "project.wsgi.application"
 
 # =========================================================
-# TEMPLATES ⚠️ REQUIRED FOR ADMIN
+# TEMPLATES (Required for Admin Panel)
 # =========================================================
 TEMPLATES = [
     {
@@ -109,7 +113,7 @@ REST_FRAMEWORK = {
 }
 
 # =========================================================
-# CORS (React connection)
+# CORS (React Connection)
 # =========================================================
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
@@ -133,16 +137,21 @@ MEDIA_ROOT = BASE_DIR / "media"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # =========================================================
-# EMAIL CONFIG (Forgot Password)
+# EMAIL CONFIG (WORKS LOCAL + RENDER + GMAIL)
 # =========================================================
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
-EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
-EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
+
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+SERVER_EMAIL = EMAIL_HOST_USER
+
+# Prevent Gmail spam rejection
+EMAIL_TIMEOUT = 30
 
 # =========================================================
 # RENDER HTTPS FIX
@@ -151,4 +160,5 @@ CSRF_TRUSTED_ORIGINS = [
     "https://*.onrender.com",
 ]
 
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+SECURE_SSL_REDIRECT = False

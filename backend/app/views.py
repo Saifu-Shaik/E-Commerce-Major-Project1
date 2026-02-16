@@ -61,7 +61,7 @@ def registerUser(request):
     if serializer.is_valid():
         user = serializer.save()
 
-        # 🔐 NEVER ALLOW ADMIN CREATION FROM FRONTEND
+        # 🔐 SECURITY: Never allow admin creation
         user.is_staff = False
         user.is_superuser = False
         user.save()
@@ -148,8 +148,7 @@ def adminDeleteUser(request, pk):
 # ============================================================
 @api_view(["GET"])
 def getProducts(request):
-    products = Product.objects.all()
-    return Response(ProductSerializer(products, many=True, context={"request": request}).data)
+    return Response(ProductSerializer(Product.objects.all(), many=True, context={"request": request}).data)
 
 
 @api_view(["GET"])
@@ -274,9 +273,8 @@ def adminUpdateOrder(request, pk):
         return Response({"detail": "Order not found"}, status=404)
 
 # ============================================================
-# 🔐 FORGOT PASSWORD FEATURE
+# 🔐 FORGOT PASSWORD (FINAL)
 # ============================================================
-
 token_generator = PasswordResetTokenGenerator()
 
 @api_view(["POST"])
@@ -289,15 +287,24 @@ def forgotPassword(request):
         uid = urlsafe_base64_encode(force_bytes(user.pk))
         token = token_generator.make_token(user)
 
-        reset_link = f"{settings.FRONTEND_URL}/reset-password/{uid}/{token}"
+        frontend_url = getattr(settings, "FRONTEND_URL", "http://localhost:3000")
+        reset_link = f"{frontend_url}/reset-password/{uid}/{token}/"
 
-        send_mail(
-            "Reset Your Password",
-            f"Click the link to reset password:\n{reset_link}",
-            settings.EMAIL_HOST_USER,
-            [email],
-            fail_silently=False,
-        )
+        subject = "E-Mart Password Reset"
+        message = f"""
+Hello {user.username},
+
+You requested to reset your password.
+
+Click the link below:
+{reset_link}
+
+If you didn't request this, ignore this email.
+
+E-Mart Team
+"""
+
+        send_mail(subject, message, settings.EMAIL_HOST_USER, [email], fail_silently=False)
 
     except User.DoesNotExist:
         pass
@@ -309,11 +316,7 @@ def forgotPassword(request):
 def verifyResetToken(request, uid, token):
     try:
         user = User.objects.get(pk=force_str(urlsafe_base64_decode(uid)))
-
-        if token_generator.check_token(user, token):
-            return Response({"valid": True})
-        return Response({"valid": False})
-
+        return Response({"valid": token_generator.check_token(user, token)})
     except:
         return Response({"valid": False})
 
@@ -328,7 +331,7 @@ def resetPasswordConfirm(request):
         user = User.objects.get(pk=force_str(urlsafe_base64_decode(uid)))
 
         if not token_generator.check_token(user, token):
-            return Response({"detail": "Invalid token"}, status=400)
+            return Response({"detail": "Invalid or expired token"}, status=400)
 
         user.set_password(password)
         user.save()
