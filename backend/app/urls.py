@@ -16,7 +16,7 @@ urlpatterns = [
     path("users/profile/update/", views.updateUserProfile, name="profile-update"),
 
     # =========================
-    # ADMIN USERS
+    # ADMIN USERS  ⭐ (MISSING — THIS CAUSED ERROR)
     # =========================
     path("admin/users/", views.adminGetUsers, name="admin-users"),
     path("admin/users/delete/<int:pk>/", views.adminDeleteUser, name="admin-user-delete"),
@@ -47,9 +47,9 @@ urlpatterns = [
     path("admin/orders/", views.adminGetOrders, name="admin-orders"),
     path("admin/orders/update/<int:pk>/", views.adminUpdateOrder, name="admin-order-update"),
 
-    # =====================================================
-    # 🔐 PASSWORD RESET (Evaluator Requirement)
-    # =====================================================
+    # =========================
+    # PASSWORD RESET
+    # =========================
     path("users/forgot-password/", views.forgotPassword, name="forgot-password"),
     path("users/reset-password/<str:uid>/<str:token>/", views.verifyResetToken, name="verify-reset-token"),
     path("users/reset-password-confirm/", views.resetPasswordConfirm, name="reset-password-confirm"),

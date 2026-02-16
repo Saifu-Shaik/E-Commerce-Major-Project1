@@ -6,7 +6,6 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from rest_framework_simplejwt.tokens import RefreshToken
 
-# Forgot password
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
@@ -64,7 +63,6 @@ def registerUser(request):
         user.is_staff = False
         user.is_superuser = False
         user.save()
-
         UserProfile.objects.get_or_create(user=user)
 
         return Response({
@@ -146,7 +144,7 @@ def adminDeleteUser(request, pk):
 
 
 # ============================================================
-# PRODUCTS (URL IMAGE SUPPORT)
+# PRODUCTS (URL IMAGE SYSTEM)
 # ============================================================
 @api_view(["GET"])
 def getProducts(request):
@@ -168,26 +166,23 @@ def adminGetProducts(request):
     return Response(ProductSerializer(Product.objects.all(), many=True).data)
 
 
-# ⭐ CREATE PRODUCT (URL)
+# CREATE PRODUCT (IMAGE URL)
 @api_view(["POST"])
 @permission_classes([IsAdminUser])
 def createProduct(request):
-    try:
-        product = Product.objects.create(
-            user=request.user,
-            name=request.data.get("name"),
-            brand=request.data.get("brand"),
-            price=request.data.get("price"),
-            countInStock=request.data.get("countInStock"),
-            description=request.data.get("description"),
-            image=request.data.get("image", "")   # IMPORTANT FIX
-        )
-        return Response(ProductSerializer(product).data)
-    except Exception as e:
-        return Response({"error": str(e)}, status=400)
+    product = Product.objects.create(
+        user=request.user,
+        name=request.data.get("name"),
+        brand=request.data.get("brand"),
+        price=request.data.get("price"),
+        countInStock=request.data.get("countInStock"),
+        description=request.data.get("description"),
+        image=request.data.get("image", "")
+    )
+    return Response(ProductSerializer(product).data)
 
 
-# ⭐ UPDATE PRODUCT (URL)
+# UPDATE PRODUCT
 @api_view(["PUT"])
 @permission_classes([IsAdminUser])
 def updateProduct(request, pk):
@@ -221,7 +216,7 @@ def deleteProduct(request, pk):
 
 
 # ============================================================
-# ORDERS (FIXED IMAGE STORAGE)
+# ORDERS
 # ============================================================
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
@@ -247,7 +242,7 @@ def addOrderItems(request):
             name=product.name,
             qty=item["qty"],
             price=item["price"],
-            image=product.image   # IMPORTANT FIX
+            image=product.image
         )
 
         product.countInStock -= item["qty"]
@@ -282,7 +277,7 @@ def adminUpdateOrder(request, pk):
 
 
 # ============================================================
-# FORGOT PASSWORD
+# PASSWORD RESET
 # ============================================================
 token_generator = PasswordResetTokenGenerator()
 
@@ -292,7 +287,6 @@ def forgotPassword(request):
 
     try:
         user = User.objects.get(email=email)
-
         uid = urlsafe_base64_encode(force_bytes(user.pk))
         token = token_generator.make_token(user)
 
@@ -335,7 +329,6 @@ def resetPasswordConfirm(request):
 
         user.set_password(password)
         user.save()
-
         return Response({"message": "Password reset successful"})
 
     except:
