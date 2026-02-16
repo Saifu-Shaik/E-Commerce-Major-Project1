@@ -9,11 +9,10 @@ const ProductEditScreen = () => {
   const navigate = useNavigate();
 
   const [product, setProduct] = useState({});
-  const [imageFile, setImageFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  
+  // Fetch Product
   useEffect(() => {
     const fetchProduct = async () => {
       try {
@@ -29,26 +28,20 @@ const ProductEditScreen = () => {
     fetchProduct();
   }, [id]);
 
- 
+  // Update Product (JSON — NOT multipart)
   const updateHandler = async (e) => {
     e.preventDefault();
     setError("");
     setLoading(true);
 
     try {
-      const formData = new FormData();
-      formData.append("name", product.name);
-      formData.append("brand", product.brand);
-      formData.append("price", product.price);
-      formData.append("countInStock", product.countInStock);
-      formData.append("description", product.description);
-
-      if (imageFile) {
-        formData.append("image", imageFile);
-      }
-
-      await API.put(`admin/products/update/${id}/`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
+      await API.put(`admin/products/update/${id}/`, {
+        name: product.name,
+        brand: product.brand,
+        price: product.price,
+        countInStock: product.countInStock,
+        description: product.description,
+        image_url: product.image, // 🔥 send direct image URL
       });
 
       navigate("/admin/products");
@@ -87,7 +80,9 @@ const ProductEditScreen = () => {
             <input
               className="form-control"
               value={product.brand || ""}
-              onChange={(e) => setProduct({ ...product, brand: e.target.value })}
+              onChange={(e) =>
+                setProduct({ ...product, brand: e.target.value })
+              }
             />
           </div>
 
@@ -97,7 +92,9 @@ const ProductEditScreen = () => {
               className="form-control"
               type="number"
               value={product.price || ""}
-              onChange={(e) => setProduct({ ...product, price: e.target.value })}
+              onChange={(e) =>
+                setProduct({ ...product, price: e.target.value })
+              }
               required
             />
           </div>
@@ -126,13 +123,21 @@ const ProductEditScreen = () => {
             ></textarea>
           </div>
 
+          {/* 🔥 Image URL instead of file */}
           <div className="mb-3">
-            <label>Product Image</label>
+            <label>Product Image URL</label>
             <input
-              type="file"
+              type="text"
               className="form-control"
-              onChange={(e) => setImageFile(e.target.files[0])}
+              placeholder="Paste image link (https://...)"
+              value={product.image || ""}
+              onChange={(e) =>
+                setProduct({ ...product, image: e.target.value })
+              }
             />
+            <small className="text-muted">
+              Only direct image links are allowed (jpg/png/webp)
+            </small>
           </div>
 
           <button className="btn btn-primary w-100">Update Product</button>

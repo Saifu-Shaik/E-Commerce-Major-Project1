@@ -1,5 +1,3 @@
-
-
 import React, { useState } from "react";
 import API from "../api";
 import { useNavigate } from "react-router-dom";
@@ -12,27 +10,37 @@ const ProductCreateScreen = () => {
   const [price, setPrice] = useState("");
   const [countInStock, setCountInStock] = useState("");
   const [description, setDescription] = useState("");
-  const [image, setImage] = useState(null);
+  const [image, setImage] = useState(""); // URL
+  const [error, setError] = useState("");
+
+  // simple direct-image validator
+  const isValidImageUrl = (url) => {
+    return /(https?:\/\/.*\.(?:png|jpg|jpeg|webp))/i.test(url);
+  };
 
   const submitHandler = async (e) => {
     e.preventDefault();
+    setError("");
 
-    const formData = new FormData();
-    formData.append("name", name);
-    formData.append("brand", brand);
-    formData.append("price", price);
-    formData.append("countInStock", countInStock);
-    formData.append("description", description);
-
-    if (image) {
-      formData.append("image", image);
+    if (!isValidImageUrl(image)) {
+      setError("Please enter a valid direct image link (jpg, png, webp)");
+      return;
     }
 
-    await API.post("admin/products/create/", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+    try {
+      await API.post("admin/products/create/", {
+        name,
+        brand,
+        price,
+        countInStock,
+        description,
+        image_url: image, // 🔥 correct field for backend
+      });
 
-    navigate("/admin/products");
+      navigate("/admin/products");
+    } catch (err) {
+      setError("Product creation failed. Please check inputs.");
+    }
   };
 
   return (
@@ -42,6 +50,8 @@ const ProductCreateScreen = () => {
       </button>
 
       <h3>Create Product</h3>
+
+      {error && <div className="alert alert-danger">{error}</div>}
 
       <form onSubmit={submitHandler}>
         <div className="mb-3">
@@ -65,8 +75,8 @@ const ProductCreateScreen = () => {
         <div className="mb-3">
           <label>Price</label>
           <input
-            className="form-control"
             type="number"
+            className="form-control"
             required
             onChange={(e) => setPrice(e.target.value)}
           />
@@ -75,8 +85,8 @@ const ProductCreateScreen = () => {
         <div className="mb-3">
           <label>Stock</label>
           <input
-            className="form-control"
             type="number"
+            className="form-control"
             required
             onChange={(e) => setCountInStock(e.target.value)}
           />
@@ -91,16 +101,24 @@ const ProductCreateScreen = () => {
         </div>
 
         <div className="mb-3">
-          <label>Product Image</label>
+          <label>Product Image URL</label>
           <input
-            type="file"
+            type="text"
             className="form-control"
-            onChange={(e) => setImage(e.target.files[0])}
+            placeholder="Paste direct image link (https://...)"
+            required
+            onChange={(e) => setImage(e.target.value)}
           />
         </div>
 
         <button className="btn btn-primary w-100">Create Product</button>
       </form>
+
+      <div className="alert alert-info mt-4">
+        <b>Note:</b> Only direct image links are accepted. Uploading image files
+        is disabled because server storage is temporary. Use image URLs from
+        Unsplash, Pexels, or CDN product links.
+      </div>
     </div>
   );
 };
