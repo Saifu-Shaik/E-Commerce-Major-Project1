@@ -2,26 +2,28 @@ from pathlib import Path
 import os
 import dj_database_url
 
-# =========================
-# BASE DIRECTORY
-# =========================
+# =========================================================
+# BASE
+# =========================================================
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# =========================
+# =========================================================
 # SECURITY
-# =========================
+# =========================================================
 SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-key")
-DEBUG = os.environ.get("DEBUG", "True") == "True"
+
+# Render automatically sets this → production mode
+DEBUG = os.environ.get("RENDER", "") == ""
 
 ALLOWED_HOSTS = [
-    "localhost",
     "127.0.0.1",
+    "localhost",
     ".onrender.com",
 ]
 
-# =========================
-# INSTALLED APPS
-# =========================
+# =========================================================
+# APPS
+# =========================================================
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -33,13 +35,14 @@ INSTALLED_APPS = [
     "corsheaders",
     "rest_framework",
     "whitenoise",
+    "django_rest_passwordreset",   # 🔐 forgot password
 
     "app",
 ]
 
-# =========================
+# =========================================================
 # MIDDLEWARE
-# =========================
+# =========================================================
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
@@ -52,19 +55,16 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-# =========================
-# URL & WSGI
-# =========================
 ROOT_URLCONF = "project.urls"
 WSGI_APPLICATION = "project.wsgi.application"
 
-# =========================
-# TEMPLATES
-# =========================
+# =========================================================
+# TEMPLATES ⚠️ REQUIRED FOR ADMIN
+# =========================================================
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -77,11 +77,9 @@ TEMPLATES = [
     },
 ]
 
-# ============================================================
-# DATABASE CONFIG (IMPORTANT FIX)
-# Local → SQLite
-# Render → PostgreSQL
-# ============================================================
+# =========================================================
+# DATABASE (SQLite local / PostgreSQL Render)
+# =========================================================
 if os.environ.get("DATABASE_URL"):
     DATABASES = {
         "default": dj_database_url.parse(
@@ -98,9 +96,9 @@ else:
         }
     }
 
-# =========================
-# DJANGO REST FRAMEWORK
-# =========================
+# =========================================================
+# REST FRAMEWORK
+# =========================================================
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
@@ -110,38 +108,47 @@ REST_FRAMEWORK = {
     ),
 }
 
-# =========================
-# CORS
-# =========================
+# =========================================================
+# CORS (React connection)
+# =========================================================
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
-# =========================
+# =========================================================
 # STATIC FILES
-# =========================
+# =========================================================
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-# =========================
-# MEDIA FILES (PRODUCT IMAGES)
-# =========================
+# =========================================================
+# MEDIA FILES (Product Images)
+# =========================================================
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
-# =========================
+# =========================================================
 # DEFAULT PRIMARY KEY
-# =========================
+# =========================================================
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# =========================
-# EMAIL CONFIG (FOR FORGOT PASSWORD LATER)
-# =========================
+# =========================================================
+# EMAIL CONFIG (Forgot Password)
+# =========================================================
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
-EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
-EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+# =========================================================
+# RENDER HTTPS FIX
+# =========================================================
+CSRF_TRUSTED_ORIGINS = [
+    "https://*.onrender.com",
+]
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

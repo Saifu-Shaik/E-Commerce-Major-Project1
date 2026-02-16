@@ -6,6 +6,13 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from rest_framework_simplejwt.tokens import RefreshToken
 
+# 🔐 Forgot password imports
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.core.mail import send_mail
+from django.conf import settings
+
 from .models import Product, Order, OrderItem, ShippingAddress, UserProfile
 from .serializers import (
     UserSerializer,
@@ -15,16 +22,16 @@ from .serializers import (
     UserProfileSerializer,
 )
 
-# =========================
-# TOKEN
-# =========================
+# ============================================================
+# TOKEN GENERATOR
+# ============================================================
 def generate_tokens(user):
     refresh = RefreshToken.for_user(user)
     return {"access": str(refresh.access_token), "refresh": str(refresh)}
 
-# =========================
+# ============================================================
 # AUTH
-# =========================
+# ============================================================
 @api_view(["POST"])
 def loginUser(request):
     user = authenticate(
@@ -36,7 +43,6 @@ def loginUser(request):
         return Response({"detail": "Invalid credentials"}, status=400)
 
     profile, _ = UserProfile.objects.get_or_create(user=user)
-    tokens = generate_tokens(user)
 
     return Response({
         "id": user.id,
@@ -44,7 +50,7 @@ def loginUser(request):
         "email": user.email,
         "is_admin": user.is_superuser,
         "profile": {} if user.is_superuser else UserProfileSerializer(profile).data,
-        **tokens,
+        **generate_tokens(user),
     })
 
 
@@ -55,13 +61,12 @@ def registerUser(request):
     if serializer.is_valid():
         user = serializer.save()
 
-        # SECURITY FIX → ALWAYS NORMAL USER
+        # 🔐 NEVER ALLOW ADMIN CREATION FROM FRONTEND
         user.is_staff = False
         user.is_superuser = False
         user.save()
 
         UserProfile.objects.get_or_create(user=user)
-        tokens = generate_tokens(user)
 
         return Response({
             "id": user.id,
@@ -69,19 +74,26 @@ def registerUser(request):
             "email": user.email,
             "is_admin": False,
             "profile": {},
-            **tokens,
+            **generate_tokens(user),
         })
 
     return Response(serializer.errors, status=400)
 
-# =========================
+# ============================================================
 # PROFILE
-# =========================
+# ============================================================
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def getUserProfile(request):
     profile, _ = UserProfile.objects.get_or_create(user=request.user)
-    return Response(UserProfileSerializer(profile).data)
+
+    return Response({
+        "id": request.user.id,
+        "username": request.user.username,
+        "email": request.user.email,
+        "is_admin": request.user.is_superuser,
+        "profile": UserProfileSerializer(profile).data,
+    })
 
 
 @api_view(["PUT"])
@@ -95,6 +107,7 @@ def updateUserProfile(request):
 
     if request.data.get("password"):
         user.set_password(request.data["password"])
+
     user.save()
 
     profile.first_name = request.data.get("first_name", profile.first_name)
@@ -103,11 +116,18 @@ def updateUserProfile(request):
     profile.saved_address = request.data.get("saved_address", profile.saved_address)
     profile.save()
 
-    return Response(UserProfileSerializer(profile).data)
+    return Response({
+        "id": user.id,
+        "username": user.username,
+        "email": user.email,
+        "is_admin": False,
+        "profile": UserProfileSerializer(profile).data,
+        **generate_tokens(user),
+    })
 
-# =========================
+# ============================================================
 # ADMIN USERS
-# =========================
+# ============================================================
 @api_view(["GET"])
 @permission_classes([IsAdminUser])
 def adminGetUsers(request):
@@ -123,12 +143,13 @@ def adminDeleteUser(request, pk):
     except User.DoesNotExist:
         return Response({"detail": "User not found"}, status=404)
 
-# =========================
+# ============================================================
 # PRODUCTS
-# =========================
+# ============================================================
 @api_view(["GET"])
 def getProducts(request):
-    return Response(ProductSerializer(Product.objects.all(), many=True, context={"request": request}).data)
+    products = Product.objects.all()
+    return Response(ProductSerializer(products, many=True, context={"request": request}).data)
 
 
 @api_view(["GET"])
@@ -138,6 +159,12 @@ def getProduct(request, pk):
         return Response(ProductSerializer(product, context={"request": request}).data)
     except Product.DoesNotExist:
         return Response({"detail": "Product not found"}, status=404)
+
+
+@api_view(["GET"])
+@permission_classes([IsAdminUser])
+def adminGetProducts(request):
+    return Response(ProductSerializer(Product.objects.all(), many=True, context={"request": request}).data)
 
 
 @api_view(["POST"])
@@ -150,7 +177,7 @@ def createProduct(request):
         price=request.data.get("price"),
         countInStock=request.data.get("countInStock"),
         description=request.data.get("description"),
-        image=request.FILES.get("image")
+        image=request.FILES.get("image"),
     )
     return Response(ProductSerializer(product, context={"request": request}).data)
 
@@ -186,13 +213,14 @@ def deleteProduct(request, pk):
     except Product.DoesNotExist:
         return Response({"detail": "Product not found"}, status=404)
 
-# =========================
+# ============================================================
 # ORDERS
-# =========================
+# ============================================================
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def addOrderItems(request):
     data = request.data
+
     order = Order.objects.create(
         user=request.user,
         paymentMethod=data["paymentMethod"],
@@ -205,7 +233,15 @@ def addOrderItems(request):
 
     for item in data["orderItems"]:
         product = Product.objects.get(id=item["product"])
-        OrderItem.objects.create(order=order, product=product, name=product.name, qty=item["qty"], price=item["price"])
+
+        OrderItem.objects.create(
+            order=order,
+            product=product,
+            name=product.name,
+            qty=item["qty"],
+            price=item["price"],
+            image=str(product.image.url) if product.image else ""
+        )
 
         product.countInStock -= item["qty"]
         product.save()
@@ -228,8 +264,76 @@ def adminGetOrders(request):
 @api_view(["PUT"])
 @permission_classes([IsAdminUser])
 def adminUpdateOrder(request, pk):
-    order = Order.objects.get(id=pk)
-    order.isDelivered = True
-    order.deliveredAt = timezone.now()
-    order.save()
-    return Response(OrderSerializer(order).data)
+    try:
+        order = Order.objects.get(id=pk)
+        order.isDelivered = True
+        order.deliveredAt = timezone.now()
+        order.save()
+        return Response(OrderSerializer(order).data)
+    except Order.DoesNotExist:
+        return Response({"detail": "Order not found"}, status=404)
+
+# ============================================================
+# 🔐 FORGOT PASSWORD FEATURE
+# ============================================================
+
+token_generator = PasswordResetTokenGenerator()
+
+@api_view(["POST"])
+def forgotPassword(request):
+    email = request.data.get("email")
+
+    try:
+        user = User.objects.get(email=email)
+
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        token = token_generator.make_token(user)
+
+        reset_link = f"{settings.FRONTEND_URL}/reset-password/{uid}/{token}"
+
+        send_mail(
+            "Reset Your Password",
+            f"Click the link to reset password:\n{reset_link}",
+            settings.EMAIL_HOST_USER,
+            [email],
+            fail_silently=False,
+        )
+
+    except User.DoesNotExist:
+        pass
+
+    return Response({"message": "If email exists, reset link sent"})
+
+
+@api_view(["GET"])
+def verifyResetToken(request, uid, token):
+    try:
+        user = User.objects.get(pk=force_str(urlsafe_base64_decode(uid)))
+
+        if token_generator.check_token(user, token):
+            return Response({"valid": True})
+        return Response({"valid": False})
+
+    except:
+        return Response({"valid": False})
+
+
+@api_view(["POST"])
+def resetPasswordConfirm(request):
+    uid = request.data.get("uid")
+    token = request.data.get("token")
+    password = request.data.get("password")
+
+    try:
+        user = User.objects.get(pk=force_str(urlsafe_base64_decode(uid)))
+
+        if not token_generator.check_token(user, token):
+            return Response({"detail": "Invalid token"}, status=400)
+
+        user.set_password(password)
+        user.save()
+
+        return Response({"message": "Password reset successful"})
+
+    except:
+        return Response({"detail": "Reset failed"}, status=400)
