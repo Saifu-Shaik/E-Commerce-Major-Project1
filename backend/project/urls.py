@@ -4,22 +4,29 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.http import JsonResponse
 
-# ✅ Root endpoint (VERY IMPORTANT for Render)
+# =========================
+# ROOT ENDPOINT (Render check)
+# =========================
 def home(request):
     return JsonResponse({"message": "Backend is running"})
 
-# ✅ Health check for Render
+# =========================
+# HEALTH CHECK (Render)
+# =========================
 def health_check(request):
     return JsonResponse({"status": "ok"})
 
 urlpatterns = [
-    path("", home),                 # ✅ Render root check
-    path("healthz/", health_check), # ✅ Render health check
+    path("", home),                  # Render root check
+    path("healthz/", health_check),  # Render health check
     path("admin/", admin.site.urls),
 
-    # Your API routes (unchanged)
+    # API routes
     path("api/", include("app.urls")),
 ]
 
-# ✅ IMPORTANT: Serve media files properly (LOCAL + RENDER)
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# =========================
+# MEDIA FILES (ONLY IN DEBUG)
+# =========================
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

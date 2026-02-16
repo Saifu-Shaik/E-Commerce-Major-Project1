@@ -1,6 +1,6 @@
 from pathlib import Path
 import os
-import dj_database_url   # <-- NEW (PostgreSQL connector)
+import dj_database_url
 
 # =========================
 # BASE DIRECTORY
@@ -10,8 +10,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # =========================
 # SECURITY
 # =========================
-SECRET_KEY = os.environ.get("SECRET_KEY", "fallback-secret-key")
-DEBUG = os.environ.get("DEBUG", "False") == "True"
+SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-key")
+DEBUG = os.environ.get("DEBUG", "True") == "True"
 
 ALLOWED_HOSTS = [
     "localhost",
@@ -30,12 +30,10 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
 
-    # Third-party
     "corsheaders",
     "rest_framework",
     "whitenoise",
 
-    # Your app
     "app",
 ]
 
@@ -79,16 +77,26 @@ TEMPLATES = [
     },
 ]
 
-# =========================
-# DATABASE (Render PostgreSQL)
-# =========================
-DATABASES = {
-    "default": dj_database_url.parse(
-        os.environ.get("DATABASE_URL"),
-        conn_max_age=600,
-        ssl_require=True
-    )
-}
+# ============================================================
+# DATABASE CONFIG (IMPORTANT FIX)
+# Local → SQLite
+# Render → PostgreSQL
+# ============================================================
+if os.environ.get("DATABASE_URL"):
+    DATABASES = {
+        "default": dj_database_url.parse(
+            os.environ.get("DATABASE_URL"),
+            conn_max_age=600,
+            ssl_require=True
+        )
+    }
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
 
 # =========================
 # DJANGO REST FRAMEWORK
@@ -103,7 +111,7 @@ REST_FRAMEWORK = {
 }
 
 # =========================
-# CORS (REACT ↔ DJANGO)
+# CORS
 # =========================
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
@@ -116,7 +124,7 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # =========================
-# MEDIA FILES
+# MEDIA FILES (PRODUCT IMAGES)
 # =========================
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
@@ -127,7 +135,7 @@ MEDIA_ROOT = BASE_DIR / "media"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # =========================
-# EMAIL CONFIG
+# EMAIL CONFIG (FOR FORGOT PASSWORD LATER)
 # =========================
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"

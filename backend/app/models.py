@@ -3,7 +3,6 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-
 # ============================================================
 # USER PROFILE
 # ============================================================
@@ -22,7 +21,7 @@ class UserProfile(models.Model):
 
 
 # ============================================================
-# PRODUCT  ✅ <-- IMPORTANT CHANGE HERE
+# PRODUCT (UPLOAD IMAGE ONLY)
 # ============================================================
 class Product(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
@@ -32,8 +31,8 @@ class Product(models.Model):
     countInStock = models.IntegerField(default=0)
     description = models.TextField(blank=True, default="")
 
-    # 🔥 CHANGED: ImageField → URLField (for direct image links)
-    image = models.URLField(max_length=500, blank=True, null=True)
+    # ✅ Correct ecommerce image storage
+    image = models.ImageField(upload_to="products/", null=True, blank=True)
 
     createdAt = models.DateTimeField(auto_now_add=True)
 
@@ -73,7 +72,9 @@ class OrderItem(models.Model):
     name = models.CharField(max_length=200)
     qty = models.IntegerField(default=1)
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    image = models.CharField(max_length=200, blank=True, default="")
+
+    # store image path at order time
+    image = models.CharField(max_length=300, blank=True, default="")
 
     def __str__(self):
         return f"{self.name} ({self.qty})"
@@ -92,7 +93,7 @@ class ShippingAddress(models.Model):
     shippingPrice = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
     def __str__(self):
-        return f"{self.address}"
+        return self.address
 
 
 # ============================================================
