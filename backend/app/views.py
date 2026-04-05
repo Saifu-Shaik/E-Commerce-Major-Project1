@@ -6,10 +6,9 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from django.contrib.auth.tokens import PasswordResetTokenGenerator
+# ❌ REMOVED EMAIL/TOKEN IMPORTS (not needed anymore)
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
-from django.core.mail import send_mail
 from django.conf import settings
 
 from .models import Product, Order, OrderItem, ShippingAddress, UserProfile
@@ -125,21 +124,19 @@ def updateUserProfile(request):
 
 
 # ============================================================
-# ADMIN USERS (🔥 FIXED)
+# ADMIN USERS
 # ============================================================
 @api_view(["GET"])
 @permission_classes([IsAdminUser])
 def adminGetUsers(request):
-    users = User.objects.all()
-    return Response(UserSerializer(users, many=True).data)
+    return Response(UserSerializer(User.objects.all(), many=True).data)
 
 
 @api_view(["DELETE"])
 @permission_classes([IsAdminUser])
 def adminDeleteUser(request, pk):
     try:
-        user = User.objects.get(id=pk)
-        user.delete()
+        User.objects.get(id=pk).delete()
         return Response({"detail": "User deleted"})
     except User.DoesNotExist:
         return Response({"detail": "User not found"}, status=404)
@@ -160,6 +157,12 @@ def getProduct(request, pk):
         return Response(ProductSerializer(product).data)
     except Product.DoesNotExist:
         return Response({"detail": "Product not found"}, status=404)
+
+
+@api_view(["GET"])
+@permission_classes([IsAdminUser])
+def adminGetProducts(request):
+    return Response(ProductSerializer(Product.objects.all(), many=True).data)
 
 
 @api_view(["POST"])
@@ -210,7 +213,7 @@ def deleteProduct(request, pk):
 
 
 # ============================================================
-# ORDERS (🔥 UPDATED)
+# ORDERS
 # ============================================================
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
@@ -245,10 +248,6 @@ def addOrderItems(request):
         product.countInStock -= item["qty"]
         product.save()
 
-    # ✅ CART CLEARING NOTE:
-    # Cart is handled in frontend (Redux + localStorage)
-    # Already cleared in orderActions.js
-
     return Response(OrderSerializer(order).data)
 
 
@@ -279,64 +278,40 @@ def adminUpdateOrder(request, pk):
 
 
 # ============================================================
-# PASSWORD RESET
+# SIMPLE PASSWORD RESET (ONLY CHANGE)
 # ============================================================
-token_generator = PasswordResetTokenGenerator()
-
 @api_view(["POST"])
-def forgotPassword(request):
+def generateResetLink(request):
     email = request.data.get("email")
 
     try:
         user = User.objects.get(email=email)
         uid = urlsafe_base64_encode(force_bytes(user.pk))
-        token = token_generator.make_token(user)
 
         frontend_url = getattr(settings, "FRONTEND_URL", "http://localhost:3000")
-        reset_link = f"{frontend_url}/reset-password/{uid}/{token}/"
+        reset_link = f"{frontend_url}/reset-password/{uid}/"
 
-        send_mail(
-            "E-Mart Password Reset",
-            f"Reset your password:\n{reset_link}",
-            settings.EMAIL_HOST_USER,
-            [email],
-            fail_silently=False,
-        )
+        return Response({
+            "message": "Reset link generated",
+            "reset_link": reset_link
+        })
+
     except User.DoesNotExist:
-        pass
-
-    return Response({"message": "If email exists, reset link sent"})
-
-@api_view(["GET"])
-@permission_classes([IsAdminUser])
-def adminGetProducts(request):
-    products = Product.objects.all()
-    return Response(ProductSerializer(products, many=True).data)
-
-@api_view(["GET"])
-def verifyResetToken(request, uid, token):
-    try:
-        user = User.objects.get(pk=force_str(urlsafe_base64_decode(uid)))
-        return Response({"valid": token_generator.check_token(user, token)})
-    except:
-        return Response({"valid": False})
+        return Response({"detail": "User not found"}, status=404)
 
 
 @api_view(["POST"])
-def resetPasswordConfirm(request):
-    uid = request.data.get("uid")
-    token = request.data.get("token")
+def resetPasswordSimple(request, uid):
     password = request.data.get("password")
 
     try:
-        user = User.objects.get(pk=force_str(urlsafe_base64_decode(uid)))
-
-        if not token_generator.check_token(user, token):
-            return Response({"detail": "Invalid or expired token"}, status=400)
+        user_id = force_str(urlsafe_base64_decode(uid))
+        user = User.objects.get(pk=user_id)
 
         user.set_password(password)
         user.save()
-        return Response({"message": "Password reset successful"})
+
+        return Response({"message": "Password updated successfully"})
 
     except:
-        return Response({"detail": "Reset failed"}, status=400)
+        return Response({"detail": "Invalid reset link"}, status=400)

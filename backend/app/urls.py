@@ -50,7 +50,9 @@ urlpatterns = [
     # =========================
     # PASSWORD RESET
     # =========================
-    path("users/forgot-password/", views.forgotPassword, name="forgot-password"),
-    path("users/reset-password/<str:uid>/<str:token>/", views.verifyResetToken, name="verify-reset-token"),
-    path("users/reset-password-confirm/", views.resetPasswordConfirm, name="reset-password-confirm"),
+    # path("users/forgot-password/", views.forgotPassword, name="forgot-password"),
+    # path("users/reset-password/<str:uid>/<str:token>/", views.verifyResetToken, name="verify-reset-token"),
+    # path("users/reset-password-confirm/", views.resetPasswordConfirm, name="reset-password-confirm"),
+    path("password/generate-link/", views.generateResetLink),
+path("password/reset/<str:uid>/", views.resetPasswordSimple),
 ]

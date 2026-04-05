@@ -1,72 +1,38 @@
 import React, { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import API from "../api";
-import Message from "../components/Message";
-import Loader from "../components/Loader";
+import { toast } from "react-toastify";
 
 const ResetPasswordScreen = () => {
-  const { uid, token } = useParams();
-  const navigate = useNavigate();
-
+  const { uid } = useParams();
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
 
   const submitHandler = async (e) => {
     e.preventDefault();
 
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
-      return;
-    }
-
     try {
-      setLoading(true);
-      await API.post("users/reset-password-confirm/", {
-        uid,
-        token,
-        password,
-      });
+      await API.post(`password/reset/${uid}/`, { password });
 
-      setMessage("Password reset successful");
-      setTimeout(() => navigate("/login"), 2000);
-    } catch (err) {
-      setError(err.response?.data?.detail || "Invalid or expired link");
-    } finally {
-      setLoading(false);
+      toast.success("Password updated successfully!");
+    } catch (error) {
+      toast.error("Invalid or expired link");
     }
   };
 
   return (
-    <div className="container mt-5" style={{ maxWidth: "500px" }}>
-      <h2>Reset Password</h2>
-
-      {message && <Message variant="success">{message}</Message>}
-      {error && <Message variant="danger">{error}</Message>}
-      {loading && <Loader />}
+    <div className="container mt-5">
+      <h2>Reset Your Password 🔑</h2>
 
       <form onSubmit={submitHandler}>
         <input
           type="password"
-          className="form-control mt-3"
+          className="form-control mb-3"
           placeholder="New Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          required
         />
 
-        <input
-          type="password"
-          className="form-control mt-3"
-          placeholder="Confirm Password"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          required
-        />
-
-        <button className="btn btn-success mt-3 w-100">Reset Password</button>
+        <button className="btn btn-success">Reset Password</button>
       </form>
     </div>
   );

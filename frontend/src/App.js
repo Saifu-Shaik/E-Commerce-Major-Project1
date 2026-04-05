@@ -131,9 +131,8 @@ function App() {
               }
             />
             <Route path="/forgot-password" element={<ForgotPasswordScreen />} />
-
             <Route
-              path="/reset-password/:uid/:token"
+              path="/reset-password/:uid"
               element={<ResetPasswordScreen />}
             />
             <Route
