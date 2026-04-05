@@ -1,5 +1,6 @@
 from dotenv import load_dotenv
 load_dotenv()
+
 from pathlib import Path
 import os
 import dj_database_url
@@ -14,7 +15,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # =========================================================
 SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-key")
 
-# Render sets RENDER=true automatically
 DEBUG = os.environ.get("RENDER") != "true"
 
 ALLOWED_HOSTS = [
@@ -23,7 +23,6 @@ ALLOWED_HOSTS = [
     ".onrender.com",
 ]
 
-# 🔴 IMPORTANT — used in password reset email
 FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:3000")
 
 # =========================================================
@@ -63,7 +62,7 @@ ROOT_URLCONF = "project.urls"
 WSGI_APPLICATION = "project.wsgi.application"
 
 # =========================================================
-# TEMPLATES (Required for Admin Panel)
+# TEMPLATES
 # =========================================================
 TEMPLATES = [
     {
@@ -82,23 +81,15 @@ TEMPLATES = [
 ]
 
 # =========================================================
-# DATABASE (SQLite local / PostgreSQL Render)
+# DATABASE (FINAL SECURE VERSION)
 # =========================================================
-if os.environ.get("DATABASE_URL"):
-    DATABASES = {
-        "default": dj_database_url.parse(
-            os.environ.get("DATABASE_URL"),
-            conn_max_age=600,
-            ssl_require=True
-        )
-    }
-else:
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "db.sqlite3",
-        }
-    }
+DATABASES = {
+    "default": dj_database_url.parse(
+        os.environ.get("DATABASE_URL"),
+        conn_max_age=600,
+        ssl_require=True
+    )
+}
 
 # =========================================================
 # REST FRAMEWORK
@@ -113,7 +104,7 @@ REST_FRAMEWORK = {
 }
 
 # =========================================================
-# CORS (React Connection)
+# CORS
 # =========================================================
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
@@ -126,7 +117,7 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # =========================================================
-# MEDIA FILES (Product Images)
+# MEDIA FILES
 # =========================================================
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
@@ -137,7 +128,7 @@ MEDIA_ROOT = BASE_DIR / "media"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # =========================================================
-# EMAIL CONFIG (WORKS LOCAL + RENDER + GMAIL)
+# EMAIL CONFIG
 # =========================================================
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
@@ -150,7 +141,6 @@ EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 SERVER_EMAIL = EMAIL_HOST_USER
 
-# Prevent Gmail spam rejection
 EMAIL_TIMEOUT = 30
 
 # =========================================================
