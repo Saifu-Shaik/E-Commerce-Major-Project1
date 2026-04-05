@@ -1,9 +1,10 @@
 import API from "../api";
+import { CART_CLEAR_ITEMS } from "../constants/cartConstants";
 
 /* =========================================================
    CREATE ORDER
 ========================================================= */
-export const createOrder = (orderData) => async (dispatch) => {
+export const createOrder = (orderData) => async (dispatch, getState) => {
   try {
     dispatch({ type: "ORDER_CREATE_REQUEST" });
 
@@ -14,21 +15,26 @@ export const createOrder = (orderData) => async (dispatch) => {
       payload: data,
     });
 
-    // clear cart after success
+    // ✅ CLEAR CART (IMPORTANT FIX)
+    dispatch({ type: CART_CLEAR_ITEMS });
+
+    // Remove from localStorage
     localStorage.removeItem("cartItems");
-    dispatch({ type: "CART_CLEAR_ITEMS" });
 
     return data;
   } catch (error) {
     dispatch({
       type: "ORDER_CREATE_FAIL",
-      payload: error.response?.data?.detail || "Order failed",
+      payload:
+        error.response && error.response.data.detail
+          ? error.response.data.detail
+          : error.message,
     });
   }
 };
 
 /* =========================================================
-   MY ORDERS (USER)
+   MY ORDERS (USER ORDER HISTORY)
 ========================================================= */
 export const listMyOrders = () => async (dispatch) => {
   try {
@@ -43,7 +49,10 @@ export const listMyOrders = () => async (dispatch) => {
   } catch (error) {
     dispatch({
       type: "ORDER_LIST_MY_FAIL",
-      payload: error.response?.data?.detail || error.message,
+      payload:
+        error.response && error.response.data.detail
+          ? error.response.data.detail
+          : error.message,
     });
   }
 };
@@ -64,7 +73,10 @@ export const listAllOrders = () => async (dispatch) => {
   } catch (error) {
     dispatch({
       type: "ORDER_LIST_FAIL",
-      payload: error.response?.data?.detail || error.message,
+      payload:
+        error.response && error.response.data.detail
+          ? error.response.data.detail
+          : error.message,
     });
   }
 };
@@ -85,7 +97,10 @@ export const updateOrder = (id, updateData) => async (dispatch) => {
   } catch (error) {
     dispatch({
       type: "ORDER_UPDATE_FAIL",
-      payload: error.response?.data?.detail || error.message,
+      payload:
+        error.response && error.response.data.detail
+          ? error.response.data.detail
+          : error.message,
     });
   }
 };
