@@ -1,10 +1,12 @@
 import React, { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import API from "../api";
 import { toast } from "react-toastify";
 
 const ResetPasswordScreen = () => {
   const { uid } = useParams();
+  const navigate = useNavigate(); // ✅ ADD THIS
+
   const [password, setPassword] = useState("");
 
   const submitHandler = async (e) => {
@@ -14,6 +16,11 @@ const ResetPasswordScreen = () => {
       await API.post(`password/reset/${uid}/`, { password });
 
       toast.success("Password updated successfully!");
+
+      // ✅ REDIRECT AFTER 2 SECONDS
+      setTimeout(() => {
+        navigate("/");
+      }, 2000);
     } catch (error) {
       toast.error("Invalid or expired link");
     }
@@ -30,6 +37,7 @@ const ResetPasswordScreen = () => {
           placeholder="New Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          required
         />
 
         <button className="btn btn-success">Reset Password</button>
