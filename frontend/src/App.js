@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 import Header from "./components/Header";
 import Footer from "./components/Footer";
+
 import HomeScreen from "./screens/HomeScreen";
 import ProductScreen from "./screens/ProductScreen";
 import CartScreen from "./screens/CartScreen";
@@ -12,6 +13,7 @@ import ShippingScreen from "./screens/ShippingScreen";
 import PaymentScreen from "./screens/PaymentScreen";
 import PlaceOrderScreen from "./screens/PlaceOrderScreen";
 import ProfileScreen from "./screens/ProfileScreen";
+import OrderHistoryScreen from "./screens/OrderHistoryScreen";
 
 import AdminDashboardScreen from "./screens/AdminDashboardScreen";
 import AdminUserListScreen from "./screens/AdminUserListScreen";
@@ -23,24 +25,46 @@ import ProductCreateScreen from "./screens/ProductCreateScreen";
 
 import AdminRoute from "./utils/AdminRoute";
 import PrivateRoute from "./utils/PrivateRoute";
+
 import ForgotPasswordScreen from "./screens/ForgotPasswordScreen";
 import ResetPasswordScreen from "./screens/ResetPasswordScreen";
-import OrderHistoryScreen from "./screens/OrderHistoryScreen";
+
+// ✅ TOAST
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function App() {
   return (
     <Router>
       <div className="page-wrapper">
+        {/* HEADER */}
         <Header />
 
+        {/* MAIN CONTENT */}
         <main className="content-area">
           <Routes>
+            {/* PUBLIC ROUTES */}
             <Route path="/" element={<HomeScreen />} />
             <Route path="/product/:id" element={<ProductScreen />} />
             <Route path="/cart" element={<CartScreen />} />
             <Route path="/login" element={<LoginScreen />} />
             <Route path="/signup" element={<RegisterScreen />} />
-            <Route path="/orders" element={<OrderHistoryScreen />} />
+            <Route path="/forgot-password" element={<ForgotPasswordScreen />} />
+            <Route
+              path="/reset-password/:uid"
+              element={<ResetPasswordScreen />}
+            />
+
+            {/* USER ROUTES */}
+            <Route
+              path="/orders"
+              element={
+                <PrivateRoute>
+                  <OrderHistoryScreen />
+                </PrivateRoute>
+              }
+            />
+
             <Route
               path="/shipping"
               element={
@@ -77,6 +101,7 @@ function App() {
               }
             />
 
+            {/* ADMIN ROUTES */}
             <Route
               path="/admin/dashboard"
               element={
@@ -130,11 +155,7 @@ function App() {
                 </AdminRoute>
               }
             />
-            <Route path="/forgot-password" element={<ForgotPasswordScreen />} />
-            <Route
-              path="/reset-password/:uid"
-              element={<ResetPasswordScreen />}
-            />
+
             <Route
               path="/admin/order/:id/edit"
               element={
@@ -146,7 +167,11 @@ function App() {
           </Routes>
         </main>
 
+        {/* FOOTER */}
         <Footer />
+
+        {/* ✅ TOAST CONTAINER (GLOBAL) */}
+        <ToastContainer position="top-right" autoClose={2000} />
       </div>
     </Router>
   );
