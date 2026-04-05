@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 import Header from "./components/Header";
 import Footer from "./components/Footer";
-
 import HomeScreen from "./screens/HomeScreen";
 import ProductScreen from "./screens/ProductScreen";
 import CartScreen from "./screens/CartScreen";
@@ -26,6 +25,7 @@ import AdminRoute from "./utils/AdminRoute";
 import PrivateRoute from "./utils/PrivateRoute";
 import ForgotPasswordScreen from "./screens/ForgotPasswordScreen";
 import ResetPasswordScreen from "./screens/ResetPasswordScreen";
+import OrderHistoryScreen from "./screens/OrderHistoryScreen";
 
 function App() {
   return (
@@ -40,7 +40,7 @@ function App() {
             <Route path="/cart" element={<CartScreen />} />
             <Route path="/login" element={<LoginScreen />} />
             <Route path="/signup" element={<RegisterScreen />} />
-
+            <Route path="/orders" element={<OrderHistoryScreen />} />
             <Route
               path="/shipping"
               element={
