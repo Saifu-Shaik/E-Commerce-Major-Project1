@@ -54,7 +54,7 @@ const Header = () => {
                     to="/orders"
                     className={location.pathname === "/orders" ? "active" : ""}
                   >
-                    My Orders
+                    My Orders <i className="fa-solid fa-cart-shopping ms-1"></i>
                   </Link>
                 </li>
 
