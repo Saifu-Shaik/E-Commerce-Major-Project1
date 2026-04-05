@@ -307,6 +307,11 @@ def forgotPassword(request):
 
     return Response({"message": "If email exists, reset link sent"})
 
+@api_view(["GET"])
+@permission_classes([IsAdminUser])
+def adminGetProducts(request):
+    products = Product.objects.all()
+    return Response(ProductSerializer(products, many=True).data)
 
 @api_view(["GET"])
 def verifyResetToken(request, uid, token):
