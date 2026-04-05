@@ -125,12 +125,32 @@ def updateUserProfile(request):
 
 
 # ============================================================
+# ADMIN USERS (🔥 FIXED)
+# ============================================================
+@api_view(["GET"])
+@permission_classes([IsAdminUser])
+def adminGetUsers(request):
+    users = User.objects.all()
+    return Response(UserSerializer(users, many=True).data)
+
+
+@api_view(["DELETE"])
+@permission_classes([IsAdminUser])
+def adminDeleteUser(request, pk):
+    try:
+        user = User.objects.get(id=pk)
+        user.delete()
+        return Response({"detail": "User deleted"})
+    except User.DoesNotExist:
+        return Response({"detail": "User not found"}, status=404)
+
+
+# ============================================================
 # PRODUCTS
 # ============================================================
 @api_view(["GET"])
 def getProducts(request):
-    products = Product.objects.all()
-    return Response(ProductSerializer(products, many=True).data)
+    return Response(ProductSerializer(Product.objects.all(), many=True).data)
 
 
 @api_view(["GET"])
@@ -225,8 +245,9 @@ def addOrderItems(request):
         product.countInStock -= item["qty"]
         product.save()
 
-    # ✅ IMPORTANT FIX (Evaluator point)
-    # (Cart is frontend-managed, but safe cleanup if needed)
+    # ✅ CART CLEARING NOTE:
+    # Cart is handled in frontend (Redux + localStorage)
+    # Already cleared in orderActions.js
 
     return Response(OrderSerializer(order).data)
 
