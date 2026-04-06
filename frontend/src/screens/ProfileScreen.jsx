@@ -4,6 +4,7 @@ import { getUserProfile, updateUserProfile } from "../actions/userActions";
 import Loader from "../components/Loader";
 import Message from "../components/Message";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const ProfileScreen = () => {
   const dispatch = useDispatch();
@@ -17,7 +18,6 @@ const ProfileScreen = () => {
 
   const isAdmin = userInfo?.isAdmin === true;
 
- 
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -28,18 +28,15 @@ const ProfileScreen = () => {
   const [phone, setPhone] = useState("");
   const [savedAddress, setSavedAddress] = useState("");
 
-  
   useEffect(() => {
     dispatch(getUserProfile());
   }, [dispatch]);
 
- 
   useEffect(() => {
     if (!user) return;
 
     setUsername(user.username || "");
     setEmail(user.email || "");
-
 
     if (!isAdmin && user.profile) {
       setFirstName(user.profile.first_name || "");
@@ -50,12 +47,11 @@ const ProfileScreen = () => {
     }
   }, [user, isAdmin]);
 
-
   const submitHandler = (e) => {
     e.preventDefault();
 
     if (isAdmin) {
-      alert("⚠️ Admin cannot update profile from here.");
+      toast.warning("⚠️ Admin cannot update profile from here.");
       return;
     }
 
@@ -72,7 +68,6 @@ const ProfileScreen = () => {
       }),
     );
   };
-
 
   return (
     <div className="container mt-4" style={{ maxWidth: "600px" }}>
@@ -94,7 +89,6 @@ const ProfileScreen = () => {
 
       {!loading && (
         <form onSubmit={submitHandler}>
-         
           <div className="mb-3">
             <label>Username : </label>
             <input
@@ -105,7 +99,6 @@ const ProfileScreen = () => {
             />
           </div>
 
-          
           <div className="mb-3">
             <label>Email :</label>
             <input
@@ -117,7 +110,6 @@ const ProfileScreen = () => {
             />
           </div>
 
-         
           <div className="mb-3">
             <label>New Password :</label>
             <input
@@ -129,7 +121,6 @@ const ProfileScreen = () => {
             />
           </div>
 
-         
           {!isAdmin && (
             <>
               <div className="mb-3">
@@ -181,7 +172,6 @@ const ProfileScreen = () => {
             </>
           )}
 
-          
           <button className="btn btn-primary w-100 mt-3" disabled={isAdmin}>
             {isAdmin ? "Admin Cannot Update" : "Update Profile"}
           </button>

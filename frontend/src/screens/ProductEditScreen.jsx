@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import API from "../api";
 import Loader from "../components/Loader";
 import Message from "../components/Message";
+import { toast } from "react-toastify";
 
 const ProductEditScreen = () => {
   const { id } = useParams();
@@ -55,7 +56,7 @@ const ProductEditScreen = () => {
         image: product.image, // ⭐⭐⭐ CORRECT FIELD NAME
       });
 
-      alert("Product Updated Successfully ✅");
+      toast.success("Product Updated Successfully ✅");
       navigate("/admin/products");
     } catch (err) {
       console.log(err.response?.data);

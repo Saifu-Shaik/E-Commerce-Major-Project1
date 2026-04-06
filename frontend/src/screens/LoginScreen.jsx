@@ -4,6 +4,7 @@ import { login } from "../actions/userActions";
 import FormContainer from "../components/FormContainer";
 import { useNavigate, Link } from "react-router-dom";
 import Loader from "../components/Loader";
+import { toast } from "react-toastify";
 
 const LoginScreen = () => {
   const [username, setUsername] = useState("");
@@ -32,7 +33,7 @@ const LoginScreen = () => {
     e.preventDefault();
 
     if (!username.trim() || !password.trim()) {
-      alert("Username and Password are required!");
+      toast.warning("Username and Password are required!");
       return;
     }
 

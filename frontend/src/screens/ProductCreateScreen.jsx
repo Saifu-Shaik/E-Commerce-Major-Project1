@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import API from "../api";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const ProductCreateScreen = () => {
   const navigate = useNavigate();
@@ -37,7 +38,7 @@ const ProductCreateScreen = () => {
         image: image, // ⭐⭐⭐ CORRECT FIELD NAME (MOST IMPORTANT FIX)
       });
 
-      alert("Product Added Successfully ✅");
+      toast.success("Product Added Successfully ✅");
       navigate("/admin/products");
     } catch (err) {
       console.log(err.response?.data);

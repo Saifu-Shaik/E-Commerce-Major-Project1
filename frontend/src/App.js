@@ -171,7 +171,7 @@ function App() {
         <Footer />
 
         {/* ✅ TOAST CONTAINER (GLOBAL) */}
-        <ToastContainer position="top-right" autoClose={2000} />
+        <ToastContainer position="top-right" autoClose={3000} />
       </div>
     </Router>
   );
