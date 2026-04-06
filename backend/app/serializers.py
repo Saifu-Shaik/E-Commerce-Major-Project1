@@ -71,7 +71,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 
 # ============================================================
-# PRODUCT SERIALIZER (URL IMAGE SUPPORT)
+# PRODUCT SERIALIZER
 # ============================================================
 class ProductSerializer(serializers.ModelSerializer):
 
@@ -80,7 +80,6 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     def validate_image(self, value):
-        # Accept only http/https links
         if value and not value.startswith("http"):
             raise serializers.ValidationError("Only direct image URL allowed")
         return value
@@ -88,7 +87,6 @@ class ProductSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         data = super().to_representation(instance)
 
-        # fallback image
         if not data.get("image"):
             data["image"] = "https://via.placeholder.com/500x500.png?text=No+Image"
 
@@ -120,13 +118,16 @@ class OrderSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     def create(self, validated_data):
-        order_items_data = validated_data.pop("orderItems")
-        shipping_data = validated_data.pop("shippingAddress")
+        order_items_data = validated_data.pop("orderItems", [])
+        shipping_data = validated_data.pop("shippingAddress", {})
 
+        # ✅ Create order (same logic)
         order = Order.objects.create(**validated_data)
 
+        # ✅ Create shipping
         ShippingAddress.objects.create(order=order, **shipping_data)
 
+        # ✅ Create order items
         for item in order_items_data:
             product = Product.objects.get(id=item["product"].id)
 
@@ -136,10 +137,10 @@ class OrderSerializer(serializers.ModelSerializer):
                 name=product.name,
                 qty=item["qty"],
                 price=item["price"],
-                image=product.image  # store image URL permanently
+                image=product.image
             )
 
-            # reduce stock
+            # ✅ Reduce stock
             product.countInStock -= item["qty"]
             product.save()
 

@@ -4,7 +4,7 @@ import { CART_CLEAR_ITEMS } from "../constants/cartConstants";
 /* =========================================================
    CREATE ORDER
 ========================================================= */
-export const createOrder = (orderData) => async (dispatch, getState) => {
+export const createOrder = (orderData) => async (dispatch) => {
   try {
     dispatch({ type: "ORDER_CREATE_REQUEST" });
 
@@ -15,20 +15,15 @@ export const createOrder = (orderData) => async (dispatch, getState) => {
       payload: data,
     });
 
-    // ✅ CLEAR CART (IMPORTANT FIX)
+    // ✅ CLEAR CART AFTER SUCCESS
     dispatch({ type: CART_CLEAR_ITEMS });
-
-    // Remove from localStorage
     localStorage.removeItem("cartItems");
 
     return data;
   } catch (error) {
     dispatch({
       type: "ORDER_CREATE_FAIL",
-      payload:
-        error.response && error.response.data.detail
-          ? error.response.data.detail
-          : error.message,
+      payload: error.response?.data?.detail || error.message,
     });
   }
 };
@@ -49,10 +44,7 @@ export const listMyOrders = () => async (dispatch) => {
   } catch (error) {
     dispatch({
       type: "ORDER_LIST_MY_FAIL",
-      payload:
-        error.response && error.response.data.detail
-          ? error.response.data.detail
-          : error.message,
+      payload: error.response?.data?.detail || error.message,
     });
   }
 };
@@ -73,10 +65,7 @@ export const listAllOrders = () => async (dispatch) => {
   } catch (error) {
     dispatch({
       type: "ORDER_LIST_FAIL",
-      payload:
-        error.response && error.response.data.detail
-          ? error.response.data.detail
-          : error.message,
+      payload: error.response?.data?.detail || error.message,
     });
   }
 };
@@ -97,10 +86,7 @@ export const updateOrder = (id, updateData) => async (dispatch) => {
   } catch (error) {
     dispatch({
       type: "ORDER_UPDATE_FAIL",
-      payload:
-        error.response && error.response.data.detail
-          ? error.response.data.detail
-          : error.message,
+      payload: error.response?.data?.detail || error.message,
     });
   }
 };

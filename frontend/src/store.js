@@ -15,7 +15,12 @@ import {
 } from "./reducers/userReducers";
 
 import { cartReducer } from "./reducers/cartReducers";
-import { orderCreateReducer } from "./reducers/orderReducers";
+
+import {
+  orderCreateReducer,
+  myOrdersReducer, // ✅ ADDED
+} from "./reducers/orderReducers";
+
 import {
   adminUsersReducer,
   adminUserDeleteReducer,
@@ -35,7 +40,9 @@ const reducer = combineReducers({
   userProfileUpdate: userProfileUpdateReducer,
 
   cart: cartReducer,
+
   orderCreate: orderCreateReducer,
+  myOrders: myOrdersReducer, // ✅ ADDED (IMPORTANT FIX)
 
   adminUsers: adminUsersReducer,
   adminUserDelete: adminUserDeleteReducer,
@@ -60,7 +67,7 @@ const middleware = [thunk];
 const store = createStore(
   reducer,
   initialState,
-  composeWithDevTools(applyMiddleware(...middleware))
+  composeWithDevTools(applyMiddleware(...middleware)),
 );
 
 export default store;

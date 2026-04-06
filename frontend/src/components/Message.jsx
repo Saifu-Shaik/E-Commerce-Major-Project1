@@ -1,6 +1,6 @@
-import React from 'react';
+import React from "react";
 
-const Message = ({ variant='info', children }) => (
+const Message = ({ variant = "info", children }) => (
   <div className={`alert alert-${variant}`} role="alert">
     {children}
   </div>

@@ -6,7 +6,6 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from rest_framework_simplejwt.tokens import RefreshToken
 
-# ❌ REMOVED EMAIL/TOKEN IMPORTS (not needed anymore)
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.conf import settings
@@ -25,7 +24,10 @@ from .serializers import (
 # ============================================================
 def generate_tokens(user):
     refresh = RefreshToken.for_user(user)
-    return {"access": str(refresh.access_token), "refresh": str(refresh)}
+    return {
+        "access": str(refresh.access_token),
+        "refresh": str(refresh),
+    }
 
 
 # ============================================================
@@ -62,6 +64,7 @@ def registerUser(request):
         user.is_staff = False
         user.is_superuser = False
         user.save()
+
         UserProfile.objects.get_or_create(user=user)
 
         return Response({
@@ -129,7 +132,9 @@ def updateUserProfile(request):
 @api_view(["GET"])
 @permission_classes([IsAdminUser])
 def adminGetUsers(request):
-    return Response(UserSerializer(User.objects.all(), many=True).data)
+    users = User.objects.all()
+    serializer = UserSerializer(users, many=True)
+    return Response(serializer.data)
 
 
 @api_view(["DELETE"])
@@ -147,7 +152,8 @@ def adminDeleteUser(request, pk):
 # ============================================================
 @api_view(["GET"])
 def getProducts(request):
-    return Response(ProductSerializer(Product.objects.all(), many=True).data)
+    products = Product.objects.all()
+    return Response(ProductSerializer(products, many=True).data)
 
 
 @api_view(["GET"])
@@ -220,18 +226,18 @@ def deleteProduct(request, pk):
 def addOrderItems(request):
     data = request.data
 
-    if len(data["orderItems"]) == 0:
+    if not data.get("orderItems") or len(data["orderItems"]) == 0:
         return Response({"detail": "No order items"}, status=400)
 
     order = Order.objects.create(
         user=request.user,
-        paymentMethod=data["paymentMethod"],
-        taxPrice=data["taxPrice"],
-        shippingPrice=data["shippingPrice"],
-        totalPrice=data["totalPrice"],
+        paymentMethod=data.get("paymentMethod", ""),
+        taxPrice=data.get("taxPrice", 0),
+        shippingPrice=data.get("shippingPrice", 0),
+        totalPrice=data.get("totalPrice", 0),
     )
 
-    ShippingAddress.objects.create(order=order, **data["shippingAddress"])
+    ShippingAddress.objects.create(order=order, **data.get("shippingAddress", {}))
 
     for item in data["orderItems"]:
         product = Product.objects.get(id=item["product"])
@@ -264,21 +270,31 @@ def adminGetOrders(request):
     return Response(OrderSerializer(Order.objects.all(), many=True).data)
 
 
+# ✅ FIXED ADMIN UPDATE (supports paid + delivered)
 @api_view(["PUT"])
 @permission_classes([IsAdminUser])
 def adminUpdateOrder(request, pk):
     try:
         order = Order.objects.get(id=pk)
-        order.isDelivered = True
-        order.deliveredAt = timezone.now()
+
+        if request.data.get("isPaid"):
+            order.isPaid = True
+            order.paidAt = timezone.now()
+
+        if request.data.get("isDelivered"):
+            order.isDelivered = True
+            order.deliveredAt = timezone.now()
+
         order.save()
+
         return Response(OrderSerializer(order).data)
+
     except Order.DoesNotExist:
         return Response({"detail": "Order not found"}, status=404)
 
 
 # ============================================================
-# SIMPLE PASSWORD RESET (ONLY CHANGE)
+# PASSWORD RESET
 # ============================================================
 @api_view(["POST"])
 def generateResetLink(request):
@@ -289,11 +305,10 @@ def generateResetLink(request):
         uid = urlsafe_base64_encode(force_bytes(user.pk))
 
         frontend_url = getattr(settings, "FRONTEND_URL", "http://localhost:3000")
-        reset_link = f"{frontend_url}/reset-password/{uid}/"
 
         return Response({
             "message": "Reset link generated",
-            "reset_link": reset_link
+            "reset_link": f"{frontend_url}/reset-password/{uid}/"
         })
 
     except User.DoesNotExist:
