@@ -52,15 +52,15 @@ const ProductCreateScreen = () => {
         ← Back
       </button>
 
-      <h3>Create Product</h3>
+      <h3>Create Product 👇: </h3>
 
       {error && <div className="alert alert-danger">{error}</div>}
 
       <form onSubmit={submitHandler}>
         <div className="mb-3">
-          <label>Name</label>
+          <label>Name :</label>
           <input
-            className="form-control"
+            className="form-control mt-2"
             required
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -68,9 +68,9 @@ const ProductCreateScreen = () => {
         </div>
 
         <div className="mb-3">
-          <label>Brand</label>
+          <label>Brand:</label>
           <input
-            className="form-control"
+            className="form-control mt-2"
             required
             value={brand}
             onChange={(e) => setBrand(e.target.value)}
@@ -78,10 +78,10 @@ const ProductCreateScreen = () => {
         </div>
 
         <div className="mb-3">
-          <label>Price</label>
+          <label>Price :</label>
           <input
             type="number"
-            className="form-control"
+            className="form-control mt-2"
             required
             value={price}
             onChange={(e) => setPrice(e.target.value)}
@@ -89,10 +89,10 @@ const ProductCreateScreen = () => {
         </div>
 
         <div className="mb-3">
-          <label>Stock</label>
+          <label>Stock :</label>
           <input
             type="number"
-            className="form-control"
+            className="form-control mt-2"
             required
             value={countInStock}
             onChange={(e) => setCountInStock(e.target.value)}
@@ -100,19 +100,19 @@ const ProductCreateScreen = () => {
         </div>
 
         <div className="mb-3">
-          <label>Description</label>
+          <label>Description :</label>
           <textarea
-            className="form-control"
+            className="form-control mt-2"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
           ></textarea>
         </div>
 
         <div className="mb-3">
-          <label>Product Image URL</label>
+          <label>Product Image URL :</label>
           <input
             type="text"
-            className="form-control"
+            className="form-control mt-2"
             placeholder="Paste direct image link (https://...)"
             required
             value={image}

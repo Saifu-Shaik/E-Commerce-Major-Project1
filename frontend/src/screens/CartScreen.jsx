@@ -29,7 +29,7 @@ const CartScreen = () => {
 
   const handleImgError = (e) => {
     e.target.onerror = null;
-    e.target.src = "https://i.imgur.com/Qp7QZ8G.png"; // fallback image
+    e.target.src = "https://i.imgur.com/Qp7QZ8G.png";
   };
 
   return (
@@ -38,13 +38,52 @@ const CartScreen = () => {
         ⬅ Back
       </button>
 
-      <h1 className="mt-2">Shopping Cart 🛒</h1>
+      <h1 className="mt-2">Shopping Cart 🛒 :</h1>
       <br />
 
+      {/* 😩 EMPTY CART UI */}
       {cartItems.length === 0 ? (
-        <h5>
-          Your cart is empty — <Link to="/">Go Back</Link>
-        </h5>
+        <div
+          style={{
+            height: "60vh",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
+            textAlign: "center",
+          }}
+        >
+          <h1 style={{ fontSize: "70px" }}>😔</h1>
+
+          <h2 style={{ fontWeight: "700", marginTop: "10px" }}>
+            Your Cart Looks Empty
+          </h2>
+
+          <p style={{ fontSize: "18px", color: "#555", marginTop: "10px" }}>
+            Buy Something And Fill Your Cart Fast !! 🤩
+          </p>
+
+          {/* 🛍️ SHOP NOW BUTTON */}
+          <button
+            onClick={() => navigate("/")}
+            style={{
+              marginTop: "20px",
+              padding: "10px 25px",
+              fontSize: "16px",
+              borderRadius: "25px",
+              border: "none",
+              backgroundColor: "#f7c600",
+              color: "#000",
+              fontWeight: "600",
+              cursor: "pointer",
+              transition: "0.3s",
+            }}
+            onMouseOver={(e) => (e.target.style.backgroundColor = "#e6b800")}
+            onMouseOut={(e) => (e.target.style.backgroundColor = "#f7c600")}
+          >
+            🛍️ Shop Now
+          </button>
+        </div>
       ) : (
         <div className="row">
           {/* Cart Items */}

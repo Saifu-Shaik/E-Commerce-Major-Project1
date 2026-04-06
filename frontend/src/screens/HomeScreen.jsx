@@ -55,6 +55,13 @@ const HomeScreen = () => {
   return (
     <div className="container mt-2">
       {/* 🔍 CENTERED SEARCH BAR */}
+      <div className="offer-bar">
+        <span>
+          🎉 Hurray!! 20% OFF | 🔥 Mega Sale | 📱 Electronics | 👕 Fashion | 🛍️
+          New Arrivals | 🚚 Free Delivery | 💳 Cashback Offers | ⚡ Limited
+          Deals | 👉 Buy Soon !!!
+        </span>
+      </div>
       <div className="search-container">
         <div className="search-wrapper">
           <input
