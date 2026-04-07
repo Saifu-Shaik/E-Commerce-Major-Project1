@@ -28,9 +28,11 @@ const ShippingScreen = () => {
         ⬅ Back
       </button>
       <CheckoutSteps step1 step2 />
-      <h1>Shipping :</h1>
+      <br></br>
+      <h3>Fill Shipping Details 🚚👉:</h3>
+      <br></br>
       <form onSubmit={submitHandler}>
-        <div className="mb-2 mt-3">
+        <div className="mb-2">
           <label>Address :</label>
           <input
             className="form-control mt-2"
@@ -67,7 +69,7 @@ const ShippingScreen = () => {
           />
         </div>
         <button className="btn btn-primary mt-2" type="submit">
-          Continue
+          Continue ╰┈➤
         </button>
       </form>
     </FormContainer>

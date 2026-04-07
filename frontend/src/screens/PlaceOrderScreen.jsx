@@ -58,20 +58,25 @@ const PlaceOrderScreen = () => {
       {loading && <Loader />}
       {error && <Message variant="danger">{error}</Message>}
 
-      <h2>Place Order</h2>
+      <h2>Place Order Confirmation 📦🎉:</h2>
+      <br></br>
 
       <div className="row">
         <div className="col-md-8">
-          <h4>Shipping</h4>
-          <p>
+          <h4>Shipping Adress 🆓🚚 :</h4>
+
+          <p className="mt-4">
             {cart.shippingAddress.address}, {cart.shippingAddress.city},{" "}
             {cart.shippingAddress.postalCode}, {cart.shippingAddress.country}
           </p>
+          <br></br>
 
-          <h4>Payment Method</h4>
-          <p>{cart.paymentMethod}</p>
+          <h4>Payment Method Selected 💵 :</h4>
+          <p className="mt-4"> 🔴 {cart.paymentMethod} 💵</p>
+          <br></br>
 
-          <h4>Order Items</h4>
+          <h4>Order Items 📦 :</h4>
+          <br></br>
 
           {cart.cartItems.length === 0 ? (
             <Message>No items in cart.</Message>
@@ -99,19 +104,20 @@ const PlaceOrderScreen = () => {
 
         <div className="col-md-4">
           <div className="card p-3">
-            <h4>Order Summary</h4>
+            <h4>Order Summary 📜 :</h4>
 
-            <p>Items Total: ₹{cart.itemsPrice}</p>
-            <p>Shipping: ₹{cart.shippingPrice}</p>
-            <p>Tax: ₹{cart.taxPrice}</p>
+            <p className="mt-2">Items Total: ₹{cart.itemsPrice}</p>
+            <p className="mt-1">Shipping: ₹{cart.shippingPrice}</p>
+            <p className="mt-2">Tax: ₹{cart.taxPrice}</p>
+            <br></br>
             <h5>Total: ₹{cart.totalPrice}</h5>
 
             <button
-              className="btn btn-primary w-100"
+              className="btn btn-primary w-100 mt-3"
               disabled={cart.cartItems.length === 0}
               onClick={placeOrderHandler}
             >
-              {loading ? "Placing Order..." : "Place Order"}
+              {loading ? "Placing Order..." : "✅ Place Order"}
             </button>
           </div>
         </div>
