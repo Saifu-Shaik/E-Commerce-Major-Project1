@@ -52,7 +52,7 @@ const AdminOrderListScreen = () => {
         ⬅ Back
       </button>
 
-      <h2 className="mb-3">Admin – Order Management</h2>
+      <h2 className="mb-3">Admin – Order Management :</h2>
 
       {/* Loading */}
       {loading && <Loader />}

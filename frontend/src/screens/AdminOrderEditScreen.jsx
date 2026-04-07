@@ -50,6 +50,7 @@ const AdminOrderEditScreen = () => {
         <Message variant="success">Order Updated Successfully</Message>
       )}
 
+      {/* 🔥 ORDER TABLE */}
       <table className="table table-bordered mt-3">
         <tbody>
           <tr>
@@ -76,9 +77,54 @@ const AdminOrderEditScreen = () => {
             <th>Delivered</th>
             <td>{order.isDelivered ? "Yes" : "No"}</td>
           </tr>
+
+          {/* 🔥 PRODUCTS WITH IMAGE */}
+          <tr>
+            <th>Products</th>
+            <td>
+              {order.orderItems && order.orderItems.length > 0
+                ? order.orderItems.map((item) => (
+                    <div
+                      key={item.id}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "15px",
+                        marginBottom: "12px",
+                        padding: "10px",
+                        border: "1px solid #eee",
+                        borderRadius: "8px",
+                      }}
+                    >
+                      {/* 🖼 IMAGE */}
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        width="60"
+                        height="60"
+                        style={{
+                          objectFit: "contain",
+                          borderRadius: "6px",
+                          border: "1px solid #ddd",
+                          padding: "5px",
+                        }}
+                      />
+
+                      {/* 📦 DETAILS */}
+                      <div>
+                        <strong>{item.name}</strong>
+                        <br />
+                        Qty: {item.qty} | ₹{item.price}
+                      </div>
+                    </div>
+                  ))
+                : "No Products"}
+            </td>
+          </tr>
         </tbody>
       </table>
 
+      {/* 🔘 ACTION BUTTONS */}
       <div className="mt-3">
         {!order.isPaid && (
           <button className="btn btn-primary me-2" onClick={markPaid}>
