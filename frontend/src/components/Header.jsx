@@ -8,12 +8,16 @@ const Header = () => {
   const location = useLocation();
 
   const { userInfo } = useSelector((state) => state.userLogin || {});
+  const { cartItems } = useSelector((state) => state.cart || { cartItems: [] });
 
   const logoutHandler = () => dispatch(logout());
 
   const displayName = userInfo?.profile?.first_name?.trim()
     ? userInfo.profile.first_name
     : userInfo?.username;
+
+  // 🔥 Cart Count
+  const cartCount = cartItems.reduce((acc, item) => acc + item.qty, 0);
 
   return (
     <header className="main-navbar">
@@ -26,7 +30,7 @@ const Header = () => {
         {/* NAVBAR */}
         <nav>
           <ul className="nav-menu">
-            {/* ✅ HOME (Evaluator Requirement) */}
+            {/* HOME */}
             <li>
               <Link
                 to="/"
@@ -36,19 +40,44 @@ const Header = () => {
               </Link>
             </li>
 
-            {/* CART */}
-            <li>
+            {/* 🛒 CART WITH SMALL BADGE */}
+            <li style={{ position: "relative" }}>
               <Link
                 to="/cart"
                 className={location.pathname === "/cart" ? "active" : ""}
               >
                 Cart <i className="fa-solid fa-cart-shopping ms-1"></i>
               </Link>
+
+              {/* 🔥 SMALL PREMIUM BADGE */}
+              {cartCount > 0 && (
+                <span
+                  style={{
+                    position: "absolute",
+                    top: "-10px", // 🔥 moved higher
+                    right: "-6px", // 🔥 slightly inside
+                    background: "#ff3b3b",
+                    color: "#fff",
+                    borderRadius: "50%",
+                    padding: "2px 6px", // 🔥 smaller
+                    fontSize: "10px", // 🔥 reduced size
+                    fontWeight: "600",
+                    lineHeight: "1",
+                    minWidth: "18px",
+                    height: "18px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  {cartCount}
+                </span>
+              )}
             </li>
 
             {userInfo ? (
               <>
-                {/* ✅ ORDER HISTORY */}
+                {/* ORDERS */}
                 <li>
                   <Link
                     to="/orders"
